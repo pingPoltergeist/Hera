@@ -1,0 +1,12 @@
+$colors: (
+  primary: #FF3D00,
+  secondary: #0076ff,
+  dark: #090B13,
+  grey: #9B9C9E,
+  lightgrey: #e5e5e5,
+  white: #ffffff,
+);
+
+@function color($color-var) {
+  @return map-get($colors, $color-var)
+};

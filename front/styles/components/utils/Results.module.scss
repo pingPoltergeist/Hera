@@ -1,0 +1,64 @@
+@use "/styles/global/partials" as *;
+
+.results_container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  min-height: 100vh;
+  width: 100vw;
+  z-index: -5;
+  background-color: black;
+  display: flex;
+  flex-wrap: wrap;
+  padding: 12rem;
+
+  @include laptop {
+    padding: 12rem 8rem;
+  }
+
+  @include hd-screen {
+    padding: 8rem 4rem;
+  }
+
+  @include mobile-l {
+    padding: 8rem 2rem;
+  }
+
+  h2 {
+    margin: auto;
+    font-size: 2rem;
+  }
+}
+
+.single_result {
+  height: 40rem;
+  width: 28rem;
+  position: relative;
+  z-index: 1;
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  cursor: pointer;
+  transition: all 250ms cubic-bezier(0.25, 0.46, 0.45, 0.94) 0s;
+  object-fit: cover;
+
+  @include laptop {
+    height: 28rem;
+    width: 20rem;
+  }
+
+  @include hd-screen {
+    height: 25rem;
+    width: 17rem;
+  }
+
+  @include mobile-l {
+    height: 13rem;
+    width: 9rem;
+  }
+
+  &:hover {
+    transform: scale(1.1);
+    z-index: 10;
+  }
+}

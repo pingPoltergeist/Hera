@@ -1,0 +1,106 @@
+@use "/styles/global/partials" as *;
+@use "/styles/global/components" as *;
+
+.user_list_container {
+  display: flex;
+  gap: 7rem;
+  flex-wrap: wrap;
+  max-width: 70vw;
+
+  @include laptop {
+    gap: 5rem;
+  }
+
+  @include hd-screen {
+    gap: 3rem;
+  }
+
+  @include mobile-l {
+    gap: 2rem;
+    justify-content: center;
+  }
+}
+
+.single_user_container {
+  background-color: rgba(165, 165, 165, 0.2);
+  width: 20rem;
+  height: 20rem;
+  border-radius: 10px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+
+  @include laptop {
+    width: 18rem;
+    height: 18rem;
+  }
+
+  @include hd-screen {
+    width: 15rem;
+    height: 15rem;
+  }
+
+  @include mobile-l {
+    width: 12rem;
+    height: 12rem;
+  }
+
+  .single_user_picture {
+    width: 40%;
+    margin-bottom: 1rem;
+  }
+
+  .single_user_username {
+    font-size: 1.8rem;
+    color: color(white);
+
+    @include hd-screen {
+      font-size: 1.5rem;
+    }
+  }
+
+  .single_user_fullname {
+    font-size: 1.4rem;
+    color: #bbb;
+
+    @include hd-screen {
+      font-size: 1.2rem;
+    }
+  }
+
+  .delete_user_button {
+    position: absolute;
+    top: 0;
+    right: 0;
+    transform: translate(20%, -20%);
+    cursor: pointer;
+  }
+
+  .new_user_button {
+    cursor: pointer;
+    transition: all 250ms cubic-bezier(0.25, 0.46, 0.45, 0.94) 0s;
+
+    @include hd-screen {
+      width: 50%;
+    }
+
+    &:hover {
+      transform: scale(1.1);
+    }
+  }
+}
+
+.modal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.paper {
+  background-color: color(dark);
+  border-radius: 2rem;
+  padding: 1rem;
+}

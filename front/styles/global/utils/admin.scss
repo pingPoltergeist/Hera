@@ -1,0 +1,74 @@
+@use "/styles/global/partials" as *;
+
+.admin_page {
+  padding: 15rem 12rem;
+  background: url("/images/admin-bg.jpg") center center no-repeat;
+  min-height: 100vh;
+
+  @include laptop {
+    padding: 12rem 8rem;
+  }
+
+  @include hd-screen {
+    padding: 10rem 4rem;
+  }
+
+  @include tablet {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  * {
+    font-family: fontFamily(secondary);
+  }
+}
+
+.admin_page_title {
+  font-size: 3.5rem;
+  margin: 3rem 0 5rem;
+
+  @include laptop {
+    font-size: 3rem;
+    margin: 2.5rem 0 4rem;
+  }
+
+  @include hd-screen {
+    font-size: 2.5rem;
+    margin: 2.2rem 0 3rem;
+  }
+
+  @include tablet {
+    text-align: center;
+  }
+
+  @include mobile-l {
+    font-size: 2rem;
+  }
+}
+
+.admin_page_description {
+  font-size: 1.4rem;
+  max-width: 80rem;
+  margin-bottom: 5rem;
+
+  @include laptop {
+    font-size: 1.2rem;
+    max-width: 70rem;
+    margin-bottom: 4rem;
+  }
+
+  @include hd-screen {
+    max-width: 60rem;
+    margin-bottom: 3rem;
+  }
+
+  @include tablet {
+    text-align: center;
+    max-width: 80vw;
+  }
+
+  @include mobile-l {
+    font-size: 1rem;
+  }
+}

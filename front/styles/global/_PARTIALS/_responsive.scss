@@ -1,0 +1,45 @@
+$widths: (
+        laptop: 1440px,
+        hd-screen: 1280px,
+        tablet: 768px,
+        mobile-l: 425px,
+        mobile: 320px
+);
+
+$laptop: 1440px;
+
+@mixin laptop {
+  @media (max-width: map-get($widths, laptop)) {
+    @content;
+  }
+};
+
+@mixin hd-screen {
+  @media (max-width: map-get($widths, hd-screen)) {
+    @content;
+  }
+};
+
+@mixin tablet {
+  @media (max-width: map-get($widths, tablet)) {
+    @content;
+  }
+};
+
+@mixin mobile-l {
+  @media (max-width: map-get($widths, mobile-l)) {
+    @content;
+  }
+};
+
+@mixin mobile {
+  @media (max-width: map-get($widths, mobile)) {
+    @content;
+  }
+};
+
+@mixin mobile-landscape {
+  @media (max-width: 900px) and (orientation: landscape), (max-width: map-get($widths, mobile-l)) and (orientation: portrait) {
+    @content;
+  }
+};

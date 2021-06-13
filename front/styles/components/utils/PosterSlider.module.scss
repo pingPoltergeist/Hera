@@ -1,0 +1,84 @@
+@use "../../global/partials" as *;
+
+.slider_container {
+  padding: 0 12rem;
+  margin: 6rem 0 2rem;
+
+  @include laptop {
+    padding: 0 8rem;
+    margin: 4rem 0 1.5rem;
+  }
+
+  @include hd-screen {
+    padding: 0 4rem;
+  }
+
+  @include mobile-l {
+    margin-top: 5rem;
+    margin-bottom: 1rem;
+    padding: 0 3rem;
+    text-align: right;
+  }
+}
+
+.slider_title {
+  font-size: 2.2rem;
+  margin-bottom: 2rem;
+}
+
+.slider_body {
+  width: 50rem;
+  overflow: visible;
+
+  @include laptop {
+    width: 40rem;
+  }
+
+  @include hd-screen {
+    width: 30rem;
+  }
+
+  @include mobile-l {
+    width: 40vw;
+  }
+
+  div {
+    @include mobile-l {
+      display: flex;
+    }
+  }
+}
+
+.slider_card {
+  height: 35rem;
+  width: 24rem;
+  position: relative;
+  z-index: 1;
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  cursor: pointer;
+  transition: all 250ms cubic-bezier(0.25, 0.46, 0.45, 0.94) 0s;
+  transform-origin: bottom right;
+  box-shadow: -3px 3px 6px #00000029;
+
+  @include laptop {
+    width: 21rem;
+    height: 30rem;
+  }
+
+  @include hd-screen {
+    height: 22rem;
+    width: 15rem;
+  }
+
+  @include mobile-l {
+    height: 13rem;
+    width: 8rem;
+  }
+
+  &:hover {
+    transform: scale(1.1);
+    z-index: 10;
+  }
+}

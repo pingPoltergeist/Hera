@@ -1,0 +1,39 @@
+@use "/styles/global/partials" as *;
+
+.menu_block {
+  display: flex;
+  gap: 4rem;
+
+  @include laptop {
+    gap: 3rem;
+  }
+
+  @include hd-screen {
+    gap: 2.5rem;
+  }
+
+  @include mobile {
+    gap: 2rem;
+  }
+
+  li {
+    font-size: 1.4rem;
+    list-style: none;
+
+    @include laptop {
+      font-size: 1.2rem;
+    }
+
+    @include mobile {
+      font-size: 1rem;
+    }
+
+    a {
+      transition: all 0.2s ease-in-out;
+    }
+
+    &:hover a {
+      color: color(primary);
+    }
+  }
+}

@@ -1,0 +1,10 @@
+@use "../global/partials" as *;
+@use "../global/components" as *;
+
+
+.container {
+  min-height: 100vh;
+  overflow: scroll;
+}
+
+

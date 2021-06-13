@@ -1,0 +1,124 @@
+@use "../global/partials" as *;
+@use "../global/components" as *;
+
+.navbar {
+  position: absolute;
+  z-index: 1000;
+  display: flex;
+  justify-content: space-between;
+  padding: 7rem 12rem 0;
+  width: 100vw;
+
+  @include laptop {
+    padding: 5rem 8rem 0;
+  }
+
+  @include hd-screen {
+    padding: 3rem 4rem 0;
+  }
+
+  @include mobile-l {
+    padding: 2rem 2rem 0;
+  }
+}
+
+.left_section {
+  display: flex;
+  align-items: center;
+}
+
+.right_section {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.hamburger {
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+
+  &:hover div:last-child {
+    width: 3rem;
+
+    @include mobile-l {
+      width: 2rem;
+    }
+  }
+
+  div {
+    width: 3rem;
+    height: 0.3rem;
+    background-color: color(white);
+    border-radius: 3px;
+    margin-bottom: 0.7rem;
+    transition: all 250ms cubic-bezier(0.25, 0.46, 0.45, 0.94) 0s;
+
+    @include hd-screen {
+      margin-bottom: 0.5rem;
+      width: 2.7rem;
+    }
+
+    @include mobile-l {
+      width: 2rem;
+      height: 0.2rem;
+      border-radius: 2px;
+      margin-bottom: 0.5rem;
+    }
+
+    &:last-child {
+      margin-bottom: 0;
+      width: 1.5rem;
+
+      @include mobile-l {
+        width: 1rem;
+      }
+    }
+  }
+}
+
+.menu_block {
+  display: flex;
+
+  @include tablet {
+    display: none;
+  }
+
+  @include mobile-l {
+    display: none;
+  }
+
+  li {
+    font-size: calc(2rem - 2px);
+    margin-left: 6rem;
+    list-style: none;
+    cursor: pointer;
+
+    @include hd-screen {
+      font-size: 1.6rem;
+      margin-left: 4rem;
+    }
+
+    &:before {
+      background-color: rgb(249, 249, 249);
+      border-radius: 0 0 4px 4px;
+      bottom: -1px;
+      content: '';
+      height: 2px;
+      opacity: 0;
+      position: absolute;
+      transform-origin: left center;
+      transform: scaleX(0);
+      transition: all 250ms cubic-bezier(0.25, 0.46, 0.45, 0.94) 0s;
+      visibility: hidden;
+      width: 30px;
+    }
+
+    &:hover {
+      &:before {
+        transform: scaleX(1);
+        visibility: visible;
+        opacity: 1 !important;
+      }
+    }
+  }
+}

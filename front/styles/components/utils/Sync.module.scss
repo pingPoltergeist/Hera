@@ -1,0 +1,23 @@
+@use "/styles/global/partials" as *;
+
+.sync_container {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 0.5rem;
+  margin-left: 1.5rem;
+
+  @include mobile-l {
+    margin-left: 0.5rem;
+  }
+
+  img {
+    height: 70%;
+
+    @include mobile-l {
+      height: 80%;
+    }
+  }
+}

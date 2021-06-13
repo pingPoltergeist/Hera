@@ -1,0 +1,50 @@
+@use "/styles/global/partials" as *;
+
+.search_container {
+  border-radius: 3px;
+  border: 1px solid white;
+  transition: all 0.2s ease-in-out;
+  padding: 0 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  @include hd-screen {
+    padding: 0 0.8rem;
+  }
+
+  @include mobile-l {
+    padding: 0 0.5rem;
+  }
+
+  img {
+    height: 45%;
+  }
+
+  .close_button {
+    visibility: hidden;
+    cursor: pointer;
+  }
+}
+
+.search_input {
+  background: none;
+  padding: 1rem;
+  font-size: 1.5rem;
+  color: white;
+  transition: all 0.2s ease-in-out;
+
+  @include hd-screen {
+    padding: 0.8rem;
+    font-size: 1.2rem;
+  }
+
+  @include mobile-l {
+    padding: 0.5rem;
+    font-size: 1.3rem;
+  }
+
+  &::placeholder {
+    color: whitesmoke;
+  }
+}

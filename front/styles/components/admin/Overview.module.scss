@@ -1,0 +1,77 @@
+@use "/styles/global/partials" as *;
+
+.overview_container {
+  display: flex;
+  gap: 4rem;
+
+  @include laptop {
+    gap: 3rem;
+  }
+
+  @include hd-screen {
+    gap: 2.5rem;
+  }
+
+  @include tablet {
+    gap: 2rem;
+  }
+
+  @include mobile-l {
+    flex-direction: column;
+  }
+}
+
+.single_overview_container {
+  width: 34rem;
+  height: 17rem;
+  border-radius: 10px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  @include laptop {
+    width: 30rem;
+    height: 15rem;
+    border-radius: 8px;
+  }
+
+  @include hd-screen {
+    width: 26rem;
+    height: 13rem;
+  }
+
+  @include tablet {
+    width: 20rem;
+    height: 10rem;
+  }
+
+  &:nth-child(1) {
+    background: url("/images/overview-1.jpg");
+  }
+
+  &:nth-child(2) {
+    background: url("/images/overview-2.jpg");
+  }
+
+  &:nth-child(3) {
+    background: url("/images/overview-3.jpg");
+  }
+
+  .overview_subtitle {
+    font-size: 1.2rem;
+
+    @include laptop {
+      font-size: 1rem;
+    }
+  }
+
+  .overview_title {
+    font-size: 3rem;
+
+    @include laptop {
+      font-size: 2.5rem;
+    }
+  }
+}

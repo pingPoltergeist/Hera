@@ -1,0 +1,25 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Amaranth:wght@400;700&display=swap');
+
+@font-face {
+  font-family: 'HomePage';
+  src:url('/fonts/homepage-baukasten/HomepageBaukasten-Bold1.ttf.woff') format('woff'),
+  url('/fonts/homepage-baukasten/HomepageBaukasten-Bold1.ttf.svg#HomepageBaukasten-Bold1') format('svg'),
+  url('/fonts/homepage-baukasten/HomepageBaukasten-Bold1.ttf.eot'),
+  url('/fonts/homepage-baukasten/HomepageBaukasten-Bold1.ttf.eot?#iefix') format('embedded-opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+
+
+$fonts: (
+  primary: 'Amaranth',
+  secondary: 'Open Sans',
+  tertiary: 'HomePage',
+  satisfy: 'Satisfy'
+);
+
+@function fontFamily($font-var) {
+  @return map-get($fonts, $font-var)
+};

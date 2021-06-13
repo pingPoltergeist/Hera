@@ -1,0 +1,63 @@
+@use "../../global/partials" as *;
+
+.more_action_container {
+  position: absolute;
+  z-index: 1000;
+  min-width: 15rem;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  border-radius: 5px;
+  overflow: hidden;
+  transform: translateY(-110%);
+  background-color: color(white);
+
+  @include hd-screen {
+    min-width: 10rem;
+  }
+}
+
+.more_action_link {
+  background-color: color(white);
+  color: color(dark);
+  font-weight: bold;
+  padding: 2rem 3rem;
+  //font-family: fontFamily(secondary);
+  text-transform: uppercase;
+  font-size: 1.6rem;
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.2s ease-in-out;
+
+  &:hover {
+    background-color: color(lightgrey);
+  }
+
+  @include laptop {
+    padding: 1.5rem 2rem;
+    font-size: 1.4rem;
+  }
+
+  @include hd-screen {
+    padding: 1.2rem 1.5rem;
+    font-size: 1.2rem;
+  }
+
+  @include mobile-l {
+    padding: 1rem 1.5rem;
+    font-size: 1.2rem;
+  }
+}
+
+.modal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.paper {
+  background-color: color(dark);
+  border-radius: 2rem;
+  padding: 1rem;
+}

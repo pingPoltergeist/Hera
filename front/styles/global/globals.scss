@@ -1,0 +1,105 @@
+@use "partials" as *;
+@use "components" as *;
+
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Amaranth:wght@400;700&display=swap');
+
+html {
+  font-size: 62.5%;
+  background-color: color(dark);
+  position: relative;
+  overflow-x: hidden;
+  font-family: fontFamily(primary);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  text-decoration: none;
+  border: none;
+
+  color: color(white);
+
+  &:focus {
+    outline: none;
+  }
+}
+
+
+
+::-webkit-scrollbar {
+  display: none;
+}
+
+.swiper-container {
+  position: static;
+}
+
+.swiper-button-prev {
+  left: -5rem;
+
+  @include hd-screen {
+    left: -3rem;
+  }
+}
+
+.swiper-button-next {
+  right: -5rem;
+
+  @include hd-screen {
+    right: -3rem;
+  }
+}
+
+.swiper-button-next::after, .swiper-button-prev::after {
+  color: white;
+  padding: 3rem 2rem;
+  font-size: 20px;
+}
+
+.MuiSlider-root {
+  @include mobile-landscape {
+    padding: 0 !important;
+  }
+}
+
+.MuiSlider-track {
+  color: color(primary);
+}
+
+.MuiSlider-rail {
+  @include mobile-landscape {
+    height: 2px !important;
+  }
+}
+
+.MuiSlider-thumb {
+  color: color(primary);
+
+  @include mobile-landscape {
+    height: 1.3rem !important;
+    width: 1.3rem !important;
+    margin-left: 0 !important;
+    margin-top: -5px !important;
+  }
+}
+
+.MuiAlert-root {
+  svg {
+    color: inherit;
+
+    path {
+      color: inherit;
+    }
+  }
+
+  div {
+    color: inherit;
+  }
+
+  .MuiAlert-message {
+    font-size: 1.6rem;
+  }
+}
+

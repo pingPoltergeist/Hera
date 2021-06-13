@@ -1,0 +1,92 @@
+@use "/styles/global/partials" as *;
+
+.slider_container {
+  margin: 3rem 0 0;
+  position: relative;
+  z-index: 100;
+
+  @include laptop {
+    margin-top: 2rem;
+  }
+
+  @include mobile-l {
+    margin-top: 1.5rem;
+  }
+}
+
+.slider_title {
+  font-size: 2.2rem;
+  margin-bottom: 2rem;
+}
+
+.slider_body {
+  width: 90rem;
+
+  @include laptop {
+    width: 70rem;
+  }
+
+  @include hd-screen {
+    width: 60rem;
+  }
+
+  @include mobile-l {
+    width: 85vw;
+  }
+}
+
+.card {
+  height: 16rem;
+  width: 27rem;
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  cursor: pointer;
+  position: relative;
+  border-radius: 5px;
+  overflow: hidden;
+  z-index: 1;
+
+  @include laptop {
+    height: 14rem;
+    width: 21.5rem !important;
+  }
+
+  @include hd-screen {
+    height: 10rem;
+    width: 18rem !important;
+  }
+
+  .card_content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+  }
+
+  img {
+    transition: all 250ms cubic-bezier(0.25, 0.46, 0.45, 0.94) 0s;
+  }
+
+  &:hover img{
+    transform: scale(1.05);
+  }
+
+  .card_img {
+    position: relative;
+    z-index: -1;
+  }
+
+  .card_name {
+    text-transform: uppercase;
+    font-size: 1.5rem;
+    opacity: 0;
+    transition: all 250ms cubic-bezier(0.25, 0.46, 0.45, 0.94) 0s;
+    margin: auto;
+    text-align: center;
+  }
+
+  &:hover .card_name {
+    opacity: 1;
+  }
+}

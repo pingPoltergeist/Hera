@@ -1,0 +1,38 @@
+@use "../partials" as *;
+
+.more_action_button {
+  width: 6rem;
+  height: 6rem;
+  background: color(white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: color(dark);
+  border-radius: 2px;
+  cursor: pointer;
+
+  @include laptop {
+    width: 5rem;
+    height: 5rem;
+  }
+
+  @include hd-screen {
+    width: 4rem;
+    height: 4rem;
+  }
+
+  @include mobile-l {
+    width: 4rem;
+    height: 4rem;
+  }
+
+  img {
+    @include hd-screen {
+      width: 1.8rem;
+    }
+
+    @include mobile-l {
+      width: 1.5rem;
+    }
+  }
+}

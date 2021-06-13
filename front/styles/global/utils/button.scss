@@ -1,0 +1,42 @@
+@use "../partials" as *;
+
+.button {
+  border: 2px solid color(white);
+  border-radius: 2px;
+  font-size: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: fontFamily(primary);
+  padding: 2rem 7rem;
+  max-height: 6rem;
+  margin: 0 0 0 1rem;
+  cursor: pointer;
+  backdrop-filter: blur(5px) brightness(0.5);
+  background: none;
+  text-transform: uppercase;
+
+  transition: all 0.2s ease-in-out;
+
+  &:hover {
+    background-color: color(white);
+    color: color(dark);
+  }
+
+  @include laptop {
+    max-height: 5rem;
+    padding: 1.8rem 5rem;
+  }
+
+  @include hd-screen {
+    max-height: 4rem;
+    font-size: 1.5rem;
+    padding: 1.5rem 3.7rem;
+  }
+
+  @include mobile-l {
+    border-width: 1px;
+    font-size: 1.2rem;
+    padding: 0 4rem;
+  }
+}

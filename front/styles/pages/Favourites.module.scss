@@ -1,0 +1,14 @@
+@use "/styles/global/partials" as *;
+
+.favourites_container {
+  padding-top: 10rem;
+}
+
+.fallback_container {
+  width: 100vw;
+  height: 80vh;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

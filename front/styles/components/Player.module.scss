@@ -1,0 +1,16 @@
+@use "/styles/global/partials" as *;
+
+.player_container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  background-color: black;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1000;
+
+  @include mobile-landscape {
+    position: absolute;
+  }
+}
+

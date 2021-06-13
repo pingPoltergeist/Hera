@@ -1,0 +1,82 @@
+@use "/styles/global/partials" as *;
+
+.library_box {
+  min-height: 40rem;
+  padding: 3rem 2rem;
+  background-color: rgba(165, 165, 165, 0.2);
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  border-radius: 10px;
+  margin-right: 7rem;
+
+  @include laptop {
+    min-height: 35rem;
+    margin-right: 5rem;
+  }
+
+  @include hd-screen {
+    padding: 2.5rem 1.5rem;
+  }
+
+  @include tablet {
+    margin: auto auto 2rem;
+  }
+
+  @include mobile-l {
+    min-height: 0;
+  }
+
+  .library_title {
+    font-size: 1.8rem;
+    margin-bottom: 4rem;
+
+    @include hd-screen {
+      font-size: 1.6rem;
+      margin-bottom: 3rem;
+    }
+  }
+
+  .single_folder_box {
+    display: flex;
+    background-color: rgba(165, 165, 165, 0.3);
+    padding: 1rem;
+    justify-content: space-between;
+    width: 35rem;
+    margin-bottom: 2rem;
+    border-radius: 3px;
+    font-size: 1.2rem;
+
+    @include laptop {
+      width: 30rem;
+    }
+
+    @include tablet {
+      font-size: 1rem;
+    }
+
+    @include mobile {
+      width: 20rem;
+    }
+
+    &::placeholder {
+      color: color(grey);
+    }
+
+    img {
+      cursor: pointer;
+    }
+  }
+
+  .library_button {
+    padding: 1rem;
+    background-color: color(primary);
+    border-radius: 3px;
+    cursor: pointer;
+
+    @include mobile-l {
+      padding: 0.7rem;
+      font-size: 1rem;
+    }
+  }
+}

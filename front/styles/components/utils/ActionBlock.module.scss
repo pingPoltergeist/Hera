@@ -1,0 +1,87 @@
+@use "../../global/partials" as *;
+@use "../../global/components" as *;
+
+.absolute {
+  position: absolute;
+  bottom: 10rem;
+  right: 12rem;
+
+  @include laptop {
+    bottom: 8rem;
+    right: 8rem;
+  }
+
+  @include hd-screen {
+    width: 24rem;
+  }
+
+  @include tablet {
+    position: static;
+    margin-top: 3rem;
+  }
+}
+
+.trailer_heading {
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+
+  @include laptop {
+    font-size: 1.8rem;
+    margin-bottom: 1.3rem;
+  }
+
+  @include hd-screen {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  @include tablet {
+    font-size: 1.4rem;
+    margin-bottom: 0.7rem;
+  }
+
+  @include mobile-l {
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+  }
+}
+
+.video_block {
+  width: 100%;
+  height: 18rem;
+  border: 1px solid white;
+  border-radius: 2px;
+  margin-bottom: 1rem;
+
+  @include hd-screen {
+    height: 12rem;
+    width: 22.5rem;
+  }
+
+  @include tablet {
+    height: 14rem;
+    max-width: 25rem;
+    width: 100%;
+  }
+
+  @include mobile-l {
+    height: 12rem;
+    width: 100%;
+    max-width: 21rem;
+  }
+}
+
+.video {
+  width: 36rem;
+  height: 20rem;
+
+  @include hd-screen {
+    height: 12rem;
+    width: 24rem;
+  }
+}
+
+.action_block {
+  position: relative;
+  display: flex;
+}

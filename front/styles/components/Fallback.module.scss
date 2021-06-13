@@ -1,0 +1,37 @@
+@use "../global/partials" as *;
+
+.fallback_container {
+  //border: 2px solid red;
+  position: relative;
+  z-index: 1000;
+  top: 0;
+  left: 0;
+  width: 80%;
+  margin: auto;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.fallback_heading {
+  font-size: 2rem;
+  font-family: fontFamily(secondary);
+  margin-bottom: 1rem;
+  text-align: center;
+
+  @include mobile-l {
+    font-size: 1.5rem;
+  }
+}
+
+.fallback_description {
+  font-size: 1.5rem;
+  font-family: fontFamily(secondary);
+  text-align: center;
+
+  @include mobile-l {
+    font-size: 1.2rem;
+  }
+}
