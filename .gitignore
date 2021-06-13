@@ -2,10 +2,10 @@
 # ---------------------
 /.idea
 /.vscode
-/venv
+*/venv
 *.log
 desktop.ini
-.env.*
+*/.env*
 
 # Python
 # ---------------------
@@ -14,12 +14,12 @@ __pycache__
 ___*
 ????_*\.py
 *.sqlite3
-/config.yaml
+*config.yaml
 
 # Next
 # ---------------------
 # dependencies
-/node_modules
+*/node_modules
 /.pnp
 .pnp.js
 
@@ -31,7 +31,7 @@ ___*
 /out/
 
 # production
-/build
+*/build
 
 # misc
 .DS_Store
