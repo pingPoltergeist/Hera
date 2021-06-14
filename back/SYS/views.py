@@ -1,6 +1,5 @@
-import json
 import re
-import socket
+import yaml
 import traceback
 import datetime
 from django.db.models import Sum
@@ -167,16 +166,9 @@ def update_port(request):
     port = int(request.data.get('port')) if request.data.get('port') else None
     if not type(port) == int:
         return Response({'error': 'port is mandatory integer field'}, status=400)
-    hostname = socket.gethostname()
-    local_ip = socket.gethostbyname(hostname)
-    API = 'API={local_ip}:{port}/api/v1'.format(local_ip=local_ip, port=port)
-    BACKEND = 'BACKEND={local_ip}:{port}'.format(local_ip=local_ip, port=port)
     try:
-        with open(settings.BASE_DIR.parent / 'front/.env', 'w') as env:
-            content = API + '\n' + BACKEND
-            env.write(content)
-        with open(settings.BASE_DIR / '.env', 'w') as env:
-            env.write('PORT={port}'.format(port=port + 1))
+        with open(settings.BASE_DIR.parent / 'settings.yaml', 'w') as settings_file:
+            yaml.dump({'PORT': port}, settings_file)
     except Exception as ex:
         traceback.print_exc()
         return Response({'error': str(ex)}, status=400)
