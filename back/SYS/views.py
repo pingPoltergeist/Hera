@@ -11,7 +11,7 @@ from pathlib import Path
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from . import utils
-
+from SYS.models import System
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.decorators import permission_classes
 
@@ -23,7 +23,7 @@ from django.conf import settings
 class Sync(APIView):
     def get(self, request, format=None):
         tmdbapi = utils.TMDBAPI()
-        movies = utils.get_all_movie_file_stat()
+        movies = {k: v for k, v in utils.get_all_movie_file_stat().items() if not(v.get('is_sync'))}
         for movie_name, details in movies.items():
             movie_search_key = re.compile('[\w ]*').match(movie_name).group()
             response = tmdbapi.search_movie(movie_search_key).json()
@@ -36,7 +36,7 @@ class Sync(APIView):
                 )
                 movies[movie_name]['sync_status'] = sync_status
 
-        tvs = utils.get_all_tv_show_file_stat()
+        tvs = {k: v for k, v in utils.get_all_tv_show_file_stat().items() if not(v.get('is_sync'))}
         for tv_show_name, details in tvs.items():
             tv_search_key = re.compile('[\w ]*').match(tv_show_name).group()
             response = tmdbapi.search_tv(tv_search_key).json()
@@ -52,14 +52,16 @@ class Sync(APIView):
                     'name': response["results"][0]["name"],
                     'sync_status': sync_status
                 })
-
+        last_sync, flag = System.objects.get_or_create(key='LAST_SYNC')
+        last_sync.value = datetime.datetime.now()
+        last_sync.save()
         return Response({'movies': movies, 'tvs': tvs})
 
 
 @api_view(['GET', 'PUT', 'DELETE'])
 def handle_media_dirs(request, dir_type=None):
     if request.method == 'GET':
-        print(settings.CONFIG.get())
+        # print(settings.CONFIG.get())
         return Response(settings.CONFIG.get())
 
     # For updating the dir records
