@@ -195,10 +195,14 @@ class TVDetails(APIView):
         response.update({'seasons': seasons})
 
         if Watchlist.objects.filter(user__dj_user=request.user, tv__tmdb_id=tv_id):
-            response['last_watching'] = Watchlist.objects.get(
+            last_watching = Watchlist.objects.get(
                 user__dj_user=request.user,
                 tv__tmdb_id=tv_id
-            ).video.tmdb_id
+            ).video
+            response['last_watching'] = {
+                'season_no': last_watching.season_no,
+                'episode_tmdb_id': last_watching.tmdb_id
+            }
         response['favourite'] = bool(UserProfile.objects.filter(
             dj_user=request.user,
             tv_wishlist__tmdb_id=tv_id)
