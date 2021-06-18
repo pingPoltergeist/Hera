@@ -126,6 +126,8 @@ class MovieList(APIView):
 class Search(APIView):
     def get(self, request, format=None):
         q = request.GET.get('q')
+        if not q or q == '':
+            return Response({'error': 'Invalid search input'})
         q_list = q.split(' ')
 
         search_filters = []
@@ -136,8 +138,8 @@ class Search(APIView):
                 search_filters.append(Q(genre=Genre.objects.filter(name__icontains=key).first()))
 
         movie_query = Video.objects.filter(type='M').filter(reduce(operator.or_, search_filters)).order_by(
-            '-popularity')
-        tv_query = TVShow.objects.filter(type='T').filter(reduce(operator.or_, search_filters)).order_by('-popularity')
+            '-popularity').distinct()
+        tv_query = TVShow.objects.filter(type='T').filter(reduce(operator.or_, search_filters)).order_by('-popularity').distinct()
         movies = MovieListSerializer(movie_query, many=True).data
         tvs = TVShowListSerializer(tv_query, many=True).data
         return Response(movies + tvs)

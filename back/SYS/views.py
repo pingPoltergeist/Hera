@@ -1,6 +1,5 @@
-import json
 import re
-import socket
+import yaml
 import traceback
 import datetime
 from django.db.models import Sum
@@ -12,7 +11,7 @@ from pathlib import Path
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from . import utils
-
+from SYS.models import System
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.decorators import permission_classes
 
@@ -24,7 +23,7 @@ from django.conf import settings
 class Sync(APIView):
     def get(self, request, format=None):
         tmdbapi = utils.TMDBAPI()
-        movies = utils.get_all_movie_file_stat()
+        movies = {k: v for k, v in utils.get_all_movie_file_stat().items() if not(v.get('is_sync'))}
         for movie_name, details in movies.items():
             movie_search_key = re.compile('[\w ]*').match(movie_name).group()
             response = tmdbapi.search_movie(movie_search_key).json()
@@ -37,7 +36,7 @@ class Sync(APIView):
                 )
                 movies[movie_name]['sync_status'] = sync_status
 
-        tvs = utils.get_all_tv_show_file_stat()
+        tvs = {k: v for k, v in utils.get_all_tv_show_file_stat().items() if not(v.get('is_sync'))}
         for tv_show_name, details in tvs.items():
             tv_search_key = re.compile('[\w ]*').match(tv_show_name).group()
             response = tmdbapi.search_tv(tv_search_key).json()
@@ -53,14 +52,16 @@ class Sync(APIView):
                     'name': response["results"][0]["name"],
                     'sync_status': sync_status
                 })
-
+        last_sync, flag = System.objects.get_or_create(key='LAST_SYNC')
+        last_sync.value = datetime.datetime.now()
+        last_sync.save()
         return Response({'movies': movies, 'tvs': tvs})
 
 
 @api_view(['GET', 'PUT', 'DELETE'])
 def handle_media_dirs(request, dir_type=None):
     if request.method == 'GET':
-        print(settings.CONFIG.get())
+        # print(settings.CONFIG.get())
         return Response(settings.CONFIG.get())
 
     # For updating the dir records
@@ -167,16 +168,9 @@ def update_port(request):
     port = int(request.data.get('port')) if request.data.get('port') else None
     if not type(port) == int:
         return Response({'error': 'port is mandatory integer field'}, status=400)
-    hostname = socket.gethostname()
-    local_ip = socket.gethostbyname(hostname)
-    API = 'API={local_ip}:{port}/api/v1'.format(local_ip=local_ip, port=port)
-    BACKEND = 'BACKEND={local_ip}:{port}'.format(local_ip=local_ip, port=port)
     try:
-        with open(settings.BASE_DIR.parent / 'front/.env', 'w') as env:
-            content = API + '\n' + BACKEND
-            env.write(content)
-        with open(settings.BASE_DIR / '.env', 'w') as env:
-            env.write('PORT={port}'.format(port=port + 1))
+        with open(settings.BASE_DIR.parent / 'settings.yaml', 'w') as settings_file:
+            yaml.dump({'PORT': port}, settings_file)
     except Exception as ex:
         traceback.print_exc()
         return Response({'error': str(ex)}, status=400)

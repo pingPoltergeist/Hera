@@ -8,8 +8,7 @@ import traceback
 import requests
 from django.conf import settings
 from CORE.models import Media, Video, Genre, TVShow
-
-last_sync = datetime.datetime(2021, 5, 12)
+from SYS.models import System
 
 
 def matcher(season_no: int, name, matching_type):
@@ -166,7 +165,11 @@ def get_dir_files_stat(directory=None, media_dir_hash=None):
         for file in os.listdir():
             if file and (os.path.splitext(file)[1] in ['.mp4', '.mpeg4', '.webm', '.mkv', '.wmv', '.avi']):
                 create_time = datetime.datetime.fromtimestamp(pathlib.Path(file).stat().st_mtime)
-                is_sync = create_time < last_sync
+                last_sync = System.objects.filter(key='LAST_SYNC').first()
+                is_sync = last_sync and last_sync.value and create_time < datetime.datetime.strptime(
+                    last_sync.value,
+                    '%Y-%m-%d %H:%M:%S.%f'  # 2021-06-17 20:41:43.935489
+                )
                 file_date[file] = {
                     'media_dir_hash': media_dir_hash,
                     'create_time': create_time,
@@ -191,12 +194,16 @@ def get_dir_tv_shows_stat(directory=None, media_dir_hash=None):
         directory and os.chdir(directory)
         for file in [name for name in os.listdir() if os.path.isdir(os.path.join(name))]:
             create_time = datetime.datetime.fromtimestamp(pathlib.Path(file).stat().st_mtime)
-            is_sync = create_time < last_sync
+            last_sync = System.objects.filter(key='LAST_SYNC').first()
+            is_sync = last_sync and last_sync.value and create_time < datetime.datetime.strptime(
+                last_sync.value,
+                '%Y-%m-%d %H:%M:%S.%f'  # 2021-06-17 20:41:43.935489
+            )
             file_date[file] = {
                 'create_time': create_time,
                 'location': str(pathlib.Path(file).absolute()),
                 'media_dir_hash': media_dir_hash,
-                'is_sync_with_db': is_sync,
+                'is_sync': is_sync,
             }
     except Exception as e:
         print(e)

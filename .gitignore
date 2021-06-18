@@ -1,7 +1,7 @@
 # Global
 # ---------------------
-/.idea
-/.vscode
+*/.idea
+*/.vscode
 */venv
 *.log
 desktop.ini
@@ -9,12 +9,13 @@ desktop.ini
 
 # Python
 # ---------------------
-/staticfiles
+*/staticfiles
 __pycache__
 ___*
 ????_*\.py
 *.sqlite3
-*config.yaml
+*/config.yaml
+*/settings.yaml
 
 # Next
 # ---------------------
