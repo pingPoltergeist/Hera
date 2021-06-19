@@ -44,17 +44,7 @@ class MovieDetails(APIView):
             movie = Video.objects.get(tmdb_id=movie_id)
         except Video.DoesNotExist:
             return Response({'error': 'Movie not found'}, status=404)
-        response = serializer = MovieListSerializer(movie, many=False).data
-        if Watchlist.objects.filter(user__dj_user=request.user, video__tmdb_id=movie_id):
-            response['timestamp'] = Watchlist.objects.get(
-                user__dj_user=request.user,
-                video__tmdb_id=movie_id
-            ).video_timestamp
-
-        response['favourite'] = bool(UserProfile.objects.filter(
-            dj_user=request.user,
-            movie_wishlist__tmdb_id=movie_id)
-        )
+        response = MovieListSerializer(movie, context={'user': request.user}, many=False).data
         return Response(response)
 
 
@@ -75,18 +65,19 @@ class GenreDetails(APIView):
         return Response(serializer.data)
 
 
+@permission_classes([IsAuthenticated])
 class RandomMedia(APIView):
     def get(self, request, filter=None, count=1, format=None):
         movies = []
         tvs = []
         if filter in ['movie', None]:
             movies = Video.objects.filter(type='M')
-            movies = list(MovieListSerializer(movies, many=True).data)
+            movies = list(MovieListSerializer(movies, context={'user': request.user}, many=True).data)
             random.shuffle(movies)
 
         if filter in ['tv', None]:
             tvs = TVShow.objects.filter(type='T')
-            tvs = list(SingleTVShowSerializer(tvs, many=True).data)
+            tvs = list(SingleTVShowSerializer(tvs, context={'user': request.user}, many=True).data)
             random.shuffle(tvs)
 
         medias = movies + tvs
@@ -191,25 +182,8 @@ class TVDetails(APIView):
                 context={'user': request.user}
             ).data
 
-        serializer = TVShowListSerializer(tvs, many=False)
-        response = dict()
-        response.update(serializer.data)
-        response.update({'seasons': seasons})
-
-        if Watchlist.objects.filter(user__dj_user=request.user, tv__tmdb_id=tv_id):
-            last_watching = Watchlist.objects.get(
-                user__dj_user=request.user,
-                tv__tmdb_id=tv_id
-            ).video
-            response['last_watching'] = {
-                'season_no': last_watching.season_no,
-                'episode_tmdb_id': last_watching.tmdb_id
-            }
-        response['favourite'] = bool(UserProfile.objects.filter(
-            dj_user=request.user,
-            tv_wishlist__tmdb_id=tv_id)
-        )
-        return Response(response)
+        serializer = SingleTVShowSerializer(tvs, many=False, context={'user': request.user})
+        return Response(serializer.data)
 
 
 @api_view(['POST'])
