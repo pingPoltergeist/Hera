@@ -75,6 +75,7 @@ class GenreDetails(APIView):
         return Response(serializer.data)
 
 
+@permission_classes([IsAuthenticated])
 class RandomMedia(APIView):
     def get(self, request, filter=None, count=1, format=None):
         movies = []
@@ -86,7 +87,7 @@ class RandomMedia(APIView):
 
         if filter in ['tv', None]:
             tvs = TVShow.objects.filter(type='T')
-            tvs = list(SingleTVShowSerializer(tvs, many=True).data)
+            tvs = list(SingleTVShowSerializer(tvs, context={'user': request.user}, many=True).data)
             random.shuffle(tvs)
 
         medias = movies + tvs
