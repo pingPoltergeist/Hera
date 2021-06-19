@@ -44,17 +44,7 @@ class MovieDetails(APIView):
             movie = Video.objects.get(tmdb_id=movie_id)
         except Video.DoesNotExist:
             return Response({'error': 'Movie not found'}, status=404)
-        response = serializer = MovieListSerializer(movie, many=False).data
-        if Watchlist.objects.filter(user__dj_user=request.user, video__tmdb_id=movie_id):
-            response['timestamp'] = Watchlist.objects.get(
-                user__dj_user=request.user,
-                video__tmdb_id=movie_id
-            ).video_timestamp
-
-        response['favourite'] = bool(UserProfile.objects.filter(
-            dj_user=request.user,
-            movie_wishlist__tmdb_id=movie_id)
-        )
+        response = MovieListSerializer(movie, context={'user': request.user}, many=False).data
         return Response(response)
 
 
@@ -82,7 +72,7 @@ class RandomMedia(APIView):
         tvs = []
         if filter in ['movie', None]:
             movies = Video.objects.filter(type='M')
-            movies = list(MovieListSerializer(movies, many=True).data)
+            movies = list(MovieListSerializer(movies, context={'user': request.user}, many=True).data)
             random.shuffle(movies)
 
         if filter in ['tv', None]:
