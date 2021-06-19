@@ -108,7 +108,6 @@ class MovieListSerializer(serializers.ModelSerializer):
                 user__dj_user=user,
                 video__tmdb_id=obj.tmdb_id
             ).video_timestamp
-        print(user, obj)
 
     def get_favourite(self, obj):
         user = self.context.get('user')
@@ -126,8 +125,9 @@ class SingleTVShowSerializer(serializers.ModelSerializer):
     class Meta:
         model = TVShow
         fields = (
-            'name', 'description', 'tmdb_id', 'logo', 'background_image', 'genres',
-            'season_count', 'rating', 'poster_image', 'thumbnail', 'seasons', 'last_watch',
+            'name', 'description', 'tmdb_id', 'logo', 'background_image', 'genres', 'popularity', 'release_date',
+            'season_count', 'rating', 'poster_image', 'thumbnail', 'seasons', 'last_watch', 'tagline', 'trailer',
+            'episode_runtime', 'type',
         )
 
     @staticmethod

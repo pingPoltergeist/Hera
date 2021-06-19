@@ -182,25 +182,8 @@ class TVDetails(APIView):
                 context={'user': request.user}
             ).data
 
-        serializer = TVShowListSerializer(tvs, many=False)
-        response = dict()
-        response.update(serializer.data)
-        response.update({'seasons': seasons})
-
-        if Watchlist.objects.filter(user__dj_user=request.user, tv__tmdb_id=tv_id):
-            last_watching = Watchlist.objects.get(
-                user__dj_user=request.user,
-                tv__tmdb_id=tv_id
-            ).video
-            response['last_watching'] = {
-                'season_no': last_watching.season_no,
-                'episode_tmdb_id': last_watching.tmdb_id
-            }
-        response['favourite'] = bool(UserProfile.objects.filter(
-            dj_user=request.user,
-            tv_wishlist__tmdb_id=tv_id)
-        )
-        return Response(response)
+        serializer = SingleTVShowSerializer(tvs, many=False, context={'user': request.user})
+        return Response(serializer.data)
 
 
 @api_view(['POST'])
