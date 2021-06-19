@@ -6,7 +6,7 @@ import {useState} from "react"
 import { AnimatePresence } from "framer-motion";
 
 
-const ActionBlock = ({type="movie", media, absolute = false}) => {
+const ActionBlock = ({type="movie", media, videoID, absolute = false}) => {
 
     const [moreActionFlag, setMoreActionFlag] = useState(false)
 
@@ -28,7 +28,7 @@ const ActionBlock = ({type="movie", media, absolute = false}) => {
 
                 {type === "tv"
                     ?
-                    media && media.seasons && <Link href={`/watch/${Object.values(media.seasons)[0][0].tmdb_id}`}>
+                    media && media.seasons && <Link href={`/watch/${videoID || Object.values(media.seasons)[0][0].tmdb_id}`}>
                         <a className="button">START WATCHING</a>
                     </Link>
 

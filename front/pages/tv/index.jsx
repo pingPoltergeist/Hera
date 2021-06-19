@@ -37,7 +37,7 @@ const Home = () => {
 
             <div id="hero" className="hero" style={hero && hero.background_image ? {backgroundImage: `url(${hero.background_image})`} : {backgroundImage: `url(https://images.unsplash.com/photo-1550684376-efcbd6e3f031?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80)`}}>
                 <section/>
-                {hero && <div className="hero_content">
+                {hero && <div className="hero_content" onClick={() => console.log(hero.last_watching.episode_tmdb_id)}>
                     <img className="hero_logo" src={hero.logo} alt=""/>
                     <p className="hero_subtitle">
                         {hero.genres && hero.genres[0] && hero.genres.map((genre, index) => (
@@ -46,7 +46,7 @@ const Home = () => {
                     </p>
                     <p className="hero_description">{shorten(hero.description)}</p>
 
-                    <ActionBlock type="tv" media={hero}/>
+                    <ActionBlock type="tv" media={hero} videoID={hero.last_watching && hero.last_watching.episode_tmdb_id}/>
                 </div>}
             </div>
 

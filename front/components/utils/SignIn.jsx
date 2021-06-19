@@ -25,9 +25,14 @@ const Signin = () => {
         signin(user)
             .then(data => {
                 if (data) {
+                    if (data.detail) {
+                        return setUser({...user, loading: false, error: 'Could not sign in'})
+                    }
+
                     authenticate(data, () => {
                         setUser({...user, username: '', password: '', loading: false, error: ''})
                     })
+
                 } else {
                     setUser({...user, loading: false, error: 'Could not sign in'})
                 }
