@@ -29,7 +29,12 @@ class Sync(APIView):
                 video_url: str = video.location
                 video_url_array = video_url.split('/')
                 media_dir_hash = video_url_array[1][5:]
-                local_path: Path = media_hash_map[media_dir_hash] / '/'.join(video_url_array[2:])
+                if video.type == CORE.MediaType.MOVIE:
+                    local_path: Path = settings.MOVIES_DIRS_MAP[media_dir_hash] / '/'.join(video_url_array[2:])
+                elif video.type == CORE.MediaType.TV_SHOWS:
+                    local_path: Path = settings.TVSHOWS_DIRS_MAP[media_dir_hash] / '/'.join(video_url_array[2:])
+                else:
+                    video.delete()
                 if not local_path.exists():
                     video.delete()
             except Exception as ex:
