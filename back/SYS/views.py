@@ -15,15 +15,38 @@ from SYS.models import System
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.decorators import permission_classes
 
-from CORE.models import Video, TVShow
+from CORE.models import Video, TVShow, MediaType, Media
 from django.contrib.auth.models import User as AuthUser
 from django.conf import settings
 
 
 class Sync(APIView):
     def get(self, request, format=None):
+        #  delete start
+        media_hash_map = settings.MOVIES_DIRS_MAP | settings.TVSHOWS_DIRS_MAP
+        for video in Video.objects.all():
+            try:
+                video_url: str = video.location
+                video_url_array = video_url.split('/')
+                media_dir_hash = video_url_array[1][5:]
+                if video.type == MediaType.MOVIE:
+                    local_path: Path = settings.MOVIES_DIRS_MAP[media_dir_hash] / '/'.join(video_url_array[2:])
+                elif video.type == MediaType.TV_SHOWS:
+                    local_path: Path = settings.TVSHOWS_DIRS_MAP[media_dir_hash] / '/'.join(video_url_array[2:])
+                else:
+                    video.delete()
+                if not local_path.exists():
+                    video.delete()
+            except Exception as ex:
+                video.delete()
+                traceback.print_exc()
+        for media in Media.objects.all():
+            if not media.video_set.all():
+                media.delete()
+        #  delete ends
+
         tmdbapi = utils.TMDBAPI()
-        movies = {k: v for k, v in utils.get_all_movie_file_stat().items() if not(v.get('is_sync'))}
+        movies = {k: v for k, v in utils.get_all_movie_file_stat().items() if not (v.get('is_sync'))}
         for movie_name, details in movies.items():
             movie_search_key = re.compile('[\w ]*').match(movie_name).group()
             response = tmdbapi.search_movie(movie_search_key).json()
@@ -36,7 +59,7 @@ class Sync(APIView):
                 )
                 movies[movie_name]['sync_status'] = sync_status
 
-        tvs = {k: v for k, v in utils.get_all_tv_show_file_stat().items() if not(v.get('is_sync'))}
+        tvs = {k: v for k, v in utils.get_all_tv_show_file_stat().items() if not (v.get('is_sync'))}
         for tv_show_name, details in tvs.items():
             tv_search_key = re.compile('[\w ]*').match(tv_show_name).group()
             response = tmdbapi.search_tv(tv_search_key).json()
