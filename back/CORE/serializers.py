@@ -146,10 +146,10 @@ class SingleTVShowSerializer(serializers.ModelSerializer):
     def get_last_watch(self, obj):
         user = self.context.get("user")
         if Watchlist.objects.filter(user__dj_user=user, tv__tmdb_id=obj.tmdb_id):
-            last_watching = Watchlist.objects.get(
+            last_watching = Watchlist.objects.filter(
                 user__dj_user=user,
                 tv__tmdb_id=obj.tmdb_id
-            ).video
+            ).order_by('-last_watched').first().video
             return {
                 'season_no': last_watching.season_no,
                 'episode_tmdb_id': last_watching.tmdb_id
