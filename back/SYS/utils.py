@@ -8,7 +8,7 @@ import traceback
 import requests
 from django.conf import settings
 from CORE.models import Media, Video, Genre, TVShow
-from SYS.models import System
+from SYS.models import MediaDirectory
 
 
 def matcher(season_no: int, name, matching_type):
@@ -166,10 +166,9 @@ def get_dir_files_stat(directory=None, media_dir_hash=None):
             if file and (os.path.splitext(file)[1] in ['.mp4', '.mpeg4', '.webm', '.mkv', '.wmv', '.avi']):
                 modify_time = datetime.datetime.fromtimestamp(os.path.getmtime(pathlib.Path(file)))
                 create_time = datetime.datetime.fromtimestamp(os.path.getctime(pathlib.Path(file)))
-                last_sync = System.objects.filter(key='LAST_SYNC').first()
+                last_sync = MediaDirectory.objects.filter(folder_hash=media_dir_hash).first()
                 last_sync_datetime = datetime.datetime.strptime(
-                    last_sync.value,
-                    '%Y-%m-%d %H:%M:%S.%f'  # 2021-06-17 20:41:43.935489
+                    last_sync.last_sync,
                     '%Y-%m-%d %H:%M:%S.%f'  # 2021-06-17 20:41:43.935489
                 )
                 is_sync = (

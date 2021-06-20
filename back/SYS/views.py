@@ -11,7 +11,7 @@ from pathlib import Path
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from . import utils
-from SYS.models import System
+from SYS.models import System, MediaDirectory, MediaDirectoryType
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.decorators import permission_classes
 
@@ -22,8 +22,29 @@ from django.conf import settings
 
 class Sync(APIView):
     def get(self, request, format=None):
+        #  media dir sync start
+        for movie_dir in MediaDirectory.objects.filter(folder_type=MediaDirectoryType.MOVIE):
+            if movie_dir.folder_hash in settings.MOVIES_DIRS_MAP.keys():
+                movie_dir.delete()
+        for tv_dir in MediaDirectory.objects.filter(folder_type=MediaDirectoryType.TV_SHOWS):
+            if tv_dir.folder_hash in settings.TVSHOWS_DIRS_MAP.keys():
+                tv_dir.delete()
+
+        for movie_dir_hash, movie_dir in settings.MOVIES_DIRS_MAP.items():
+            MediaDirectory.objects.get_or_create(
+                folder_location=str(movie_dir),
+                folder_hash=movie_dir_hash,
+                folder_type=MediaDirectoryType.MOVIE
+            )
+        for tv_dir_hash, tv_dir in settings.TVSHOWS_DIRS_MAP.items():
+            MediaDirectory.objects.get_or_create(
+                folder_location=str(tv_dir),
+                folder_hash=tv_dir_hash,
+                folder_type=MediaDirectoryType.TV_SHOWS
+            )
+        #  media dir sync end
+
         #  delete start
-        media_hash_map = settings.MOVIES_DIRS_MAP | settings.TVSHOWS_DIRS_MAP
         for video in Video.objects.all():
             try:
                 video_url: str = video.location
@@ -58,6 +79,11 @@ class Sync(APIView):
                     '/media{id}/{filename}'.format(id=details.get('media_dir_hash'), filename=movie_name)
                 )
                 movies[movie_name]['sync_status'] = sync_status
+        synced_movie_dir = set(val.get('media_dir_hash') for val in movies.values())
+        MediaDirectory.objects.filter(
+            folder_hash__in=synced_movie_dir,
+            folder_type=MediaDirectoryType.MOVIE
+        ).update(last_sync=datetime.datetime.now(datetime.timezone.utc))
 
         tvs = utils.get_all_tv_show_file_stat()
         for tv_show_name, details in tvs.items():
@@ -75,6 +101,12 @@ class Sync(APIView):
                     'name': response["results"][0]["name"],
                     'sync_status': sync_status
                 })
+        synced_tv_dir = set(val.get('media_dir_hash') for val in tvs.values())
+        MediaDirectory.objects.filter(
+            folder_hash__in=synced_tv_dir,
+            folder_type=MediaDirectoryType.TV_SHOWS
+        ).update(last_sync=datetime.datetime.now(datetime.timezone.utc))
+
         last_sync, flag = System.objects.get_or_create(key='LAST_SYNC')
         last_sync.value = datetime.datetime.now()
         last_sync.save()
