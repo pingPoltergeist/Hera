@@ -59,7 +59,7 @@ class Sync(APIView):
                 )
                 movies[movie_name]['sync_status'] = sync_status
 
-        tvs = {k: v for k, v in utils.get_all_tv_show_file_stat().items() if not (v.get('is_sync'))}
+        tvs = utils.get_all_tv_show_file_stat()
         for tv_show_name, details in tvs.items():
             tv_search_key = re.compile('[\w ]*').match(tv_show_name).group()
             response = tmdbapi.search_tv(tv_search_key).json()
