@@ -28,7 +28,7 @@ const tv = ({ hero }) => {
     }
 
     useEffect(() => {
-        setCurrentSeason(hero.last_watching ? hero.last_watching.season_no : Object.keys(hero.seasons)[0])
+        setCurrentSeason(hero.last_watch ? hero.last_watch.season_no : Object.keys(hero.seasons)[0])
     }, [])
 
     return (
@@ -59,7 +59,7 @@ const tv = ({ hero }) => {
 
                     {hero.seasons[currentSeason] && <SeasonSlider medias={hero.seasons[currentSeason]} />}
 
-                    <ActionBlock type="tv" media={hero} absolute={true} videoID={hero.last_watching && hero.last_watching.episode_tmdb_id}/>
+                    <ActionBlock type="tv" media={hero} absolute={true} videoID={hero.last_watch && hero.last_watch.episode_tmdb_id}/>
                 </div>
             </div>
         </div>

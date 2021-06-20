@@ -1,6 +1,6 @@
 import {API} from "../backend";
 
-export const getRandomMedia = (type, count) => {
+export const getRandomMedia = (token, type, count) => {
     let url = `${API}/random-media`
     if (type){
         url +=`/${type}`
@@ -8,7 +8,11 @@ export const getRandomMedia = (type, count) => {
     if (count){
         url +=`/${count}`
     }
-    return fetch(url)
+    return fetch(url, {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    })
         .then(response => {
             return response.json()
         })
