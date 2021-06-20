@@ -22,6 +22,19 @@ from django.conf import settings
 
 class Sync(APIView):
     def get(self, request, format=None):
+        media_hash_map = settings.MOVIES_DIRS_MAP | settings.TVSHOWS_DIRS_MAP
+        for video in Video.objects.all():
+            try:
+                video_url: str = video.location
+                video_url_array = video_url.split('/')
+                media_dir_hash = video_url_array[1][5:]
+                local_path: Path = media_hash_map[media_dir_hash] / '/'.join(video_url_array[2:])
+                if not local_path.exists():
+                    video.delete()
+            except Exception as ex:
+                video.delete()
+                traceback.print_exc()
+
         tmdbapi = utils.TMDBAPI()
         movies = {k: v for k, v in utils.get_all_movie_file_stat().items() if not(v.get('is_sync'))}
         for movie_name, details in movies.items():
