@@ -6,7 +6,7 @@ const Results = ({results}) => {
     return (
         <div className={styles.results_container}>
             {results && results[0] && results.map((result, index) => (
-                <Link key={index} href={`/movie/${result.tmdb_id}`}>
+                <Link key={index} href={result.type === 'M' ? `/movie/${result.tmdb_id}` : `/tv/${result.tmdb_id}`}>
                     <div key={index} className={styles.single_result}>
                         {result.poster_image && <Image src={result.poster_image} priority layout='fill' objectFit={"cover"}/>}
                     </div>

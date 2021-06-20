@@ -10,6 +10,7 @@ import {shorten, withAuth} from "../helpers/utilities"
 import {getAllGenres, getGenre} from "../helpers/genreApiCalls"
 import {ErrorBoundary} from "react-error-boundary"
 import Fallback from "../components/Fallback"
+import {isAuthenticated} from "../helpers/authApiCalls";
 
 
 const Home = () => {
@@ -19,8 +20,10 @@ const Home = () => {
     const [tvList, setTvList] = useState([])
     const [genre, setGenre] = useState([])
 
+    const token = isAuthenticated()
+
     const preload = () => {
-        getRandomMedia().then(data => {
+        getRandomMedia(token).then(data => {
             if (!data) {
                 return
             }

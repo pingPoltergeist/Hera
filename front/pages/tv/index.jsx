@@ -6,14 +6,16 @@ import {getRandomTv, getTvList} from "../../helpers/tvApiCalls";
 import {shorten, withAuth} from "../../helpers/utilities";
 import Fallback from "../../components/Fallback";
 import {ErrorBoundary} from "react-error-boundary";
+import {isAuthenticated} from "../../helpers/authApiCalls";
 
 const Home = () => {
 
     const [tvs, setTvs] = useState([])
     const [hero, setHero] = useState(null)
+    const token = isAuthenticated()
 
     const preload = () => {
-        getRandomTv().then(data => {
+        getRandomTv(token).then(data => {
             if (!data) {
                 return
             }
@@ -46,7 +48,7 @@ const Home = () => {
                     </p>
                     <p className="hero_description">{shorten(hero.description)}</p>
 
-                    <ActionBlock type="tv" media={hero}/>
+                    <ActionBlock type="tv" media={hero} videoID={hero.last_watch && hero.last_watch.episode_tmdb_id}/>
                 </div>}
             </div>
 

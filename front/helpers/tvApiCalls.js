@@ -1,7 +1,11 @@
 import {API} from "../backend";
 
-export const getRandomTv = () => {
-    return fetch(`${API}/random-media/tv`)
+export const getRandomTv = (token) => {
+    return fetch(`${API}/random-media/tv`, {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    })
         .then(response => {
             return response.json()
         })

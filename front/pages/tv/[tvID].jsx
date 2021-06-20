@@ -28,7 +28,7 @@ const tv = ({ hero }) => {
     }
 
     useEffect(() => {
-        setCurrentSeason(Object.keys(hero.seasons)[0])
+        setCurrentSeason(hero.last_watch ? hero.last_watch.season_no : Object.keys(hero.seasons)[0])
     }, [])
 
     return (
@@ -51,7 +51,7 @@ const tv = ({ hero }) => {
                     </p>
                     <p className="hero_description">{shorten(hero.description)}</p>
 
-                    {hero.seasons && <select name="season" id="" onChange={handleChange}>
+                    {hero.seasons && <select name="season" id="" onChange={handleChange} value={currentSeason}>
                         {Object.keys(hero.seasons).map((season, index) => (
                             <option key={index} value={season}>SEASON {season}: EPISODES</option>
                         ))}
@@ -59,7 +59,7 @@ const tv = ({ hero }) => {
 
                     {hero.seasons[currentSeason] && <SeasonSlider medias={hero.seasons[currentSeason]} />}
 
-                    <ActionBlock type="tv" absolute={true} media={hero}/>
+                    <ActionBlock type="tv" media={hero} absolute={true} videoID={hero.last_watch && hero.last_watch.episode_tmdb_id}/>
                 </div>
             </div>
         </div>

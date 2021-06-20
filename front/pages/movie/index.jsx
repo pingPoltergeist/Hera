@@ -6,15 +6,17 @@ import ActionBlock from "../../components/utils/ActionBlock";
 import {shorten, withAuth} from "../../helpers/utilities";
 import Fallback from "../../components/Fallback";
 import {ErrorBoundary} from "react-error-boundary";
+import {isAuthenticated} from "../../helpers/authApiCalls";
 
 
 const movie = () => {
 
     const [hero, setHero] = useState([])
     const [movies, setMovies] = useState([])
+    const token = isAuthenticated()
 
     const preload = () => {
-        getRandomMedia('movie', 2).then(data => {
+        getRandomMedia(token, 'movie', 2).then(data => {
             setHero(data)
         })
         getAllMovies().then(data => {
