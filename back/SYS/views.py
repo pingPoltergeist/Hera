@@ -15,7 +15,7 @@ from SYS.models import System
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.decorators import permission_classes
 
-from CORE.models import Video, TVShow, Media
+from CORE.models import Video, TVShow, MediaType
 from django.contrib.auth.models import User as AuthUser
 from django.conf import settings
 
@@ -29,9 +29,9 @@ class Sync(APIView):
                 video_url: str = video.location
                 video_url_array = video_url.split('/')
                 media_dir_hash = video_url_array[1][5:]
-                if video.type == CORE.MediaType.MOVIE:
+                if video.type == MediaType.MOVIE:
                     local_path: Path = settings.MOVIES_DIRS_MAP[media_dir_hash] / '/'.join(video_url_array[2:])
-                elif video.type == CORE.MediaType.TV_SHOWS:
+                elif video.type == MediaType.TV_SHOWS:
                     local_path: Path = settings.TVSHOWS_DIRS_MAP[media_dir_hash] / '/'.join(video_url_array[2:])
                 else:
                     video.delete()
