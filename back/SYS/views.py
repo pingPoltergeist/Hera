@@ -15,7 +15,7 @@ from SYS.models import System
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.decorators import permission_classes
 
-from CORE.models import Video, TVShow, MediaType
+from CORE.models import Video, TVShow, MediaType, Media
 from django.contrib.auth.models import User as AuthUser
 from django.conf import settings
 
