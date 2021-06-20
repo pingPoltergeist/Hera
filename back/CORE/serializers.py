@@ -1,6 +1,7 @@
 from rest_framework import serializers
+
 from .models import Media, Video, Genre, TVShow
-from USER.models import Watchlist
+from USER.models import Watchlist, UserProfile
 
 
 class MovieCollectionListSerializer(serializers.ModelSerializer):
@@ -84,30 +85,49 @@ class TVShowListSerializer(serializers.ModelSerializer):
 
 class MovieListSerializer(serializers.ModelSerializer):
     genres = serializers.SerializerMethodField()
+    timestamp = serializers.SerializerMethodField()
+    favourite = serializers.SerializerMethodField()
 
     class Meta:
         model = Video
         fields = (
             'name', 'description', 'tmdb_id', 'poster_image', 'thumbnail', 'genres', 'popularity', 'rating',
-            'release_date', 'logo', 'background_image', 'tagline', 'trailer', 'duration', 'location', 'type'
+            'release_date', 'logo', 'background_image', 'tagline', 'trailer', 'duration', 'location', 'type',
+            'timestamp', 'favourite'
         )
 
     @staticmethod
     def get_genres(obj):
-        # print(obj)
         genre_list = obj.genre.all()
         return GenreSerializer(genre_list, many=True).data
+
+    def get_timestamp(self, obj):
+        user = self.context.get('user')
+        if Watchlist.objects.filter(user__dj_user=user, video__tmdb_id=obj.tmdb_id):
+            return Watchlist.objects.get(
+                user__dj_user=user,
+                video__tmdb_id=obj.tmdb_id
+            ).video_timestamp
+
+    def get_favourite(self, obj):
+        user = self.context.get('user')
+        return bool(UserProfile.objects.filter(
+            dj_user=user,
+            movie_wishlist__tmdb_id=obj.tmdb_id)
+        )
 
 
 class SingleTVShowSerializer(serializers.ModelSerializer):
     genres = serializers.SerializerMethodField()
     seasons = serializers.SerializerMethodField()
+    last_watch = serializers.SerializerMethodField()
 
     class Meta:
         model = TVShow
         fields = (
-            'name', 'description', 'tmdb_id', 'logo', 'background_image', 'genres',
-            'season_count', 'rating', 'poster_image', 'thumbnail', 'seasons'
+            'name', 'description', 'tmdb_id', 'logo', 'background_image', 'genres', 'popularity', 'release_date',
+            'season_count', 'rating', 'poster_image', 'thumbnail', 'seasons', 'last_watch', 'tagline', 'trailer',
+            'episode_runtime', 'type',
         )
 
     @staticmethod
@@ -122,6 +142,20 @@ class SingleTVShowSerializer(serializers.ModelSerializer):
         for season in seasons_list:
             seasons[int(season)] = TVShowEpisodeSerializer(obj.video_set.filter(season_no=int(season)), many=True).data
         return seasons
+
+    def get_last_watch(self, obj):
+        user = self.context.get("user")
+        if Watchlist.objects.filter(user__dj_user=user, tv__tmdb_id=obj.tmdb_id):
+            last_watching = Watchlist.objects.get(
+                user__dj_user=user,
+                tv__tmdb_id=obj.tmdb_id
+            ).video
+            return {
+                'season_no': last_watching.season_no,
+                'episode_tmdb_id': last_watching.tmdb_id
+            }
+        else:
+            return None
 
 
 class GenreSerializer(serializers.ModelSerializer):
