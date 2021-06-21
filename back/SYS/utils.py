@@ -8,7 +8,7 @@ import traceback
 import requests
 from django.conf import settings
 from CORE.models import Media, Video, Genre, TVShow
-from SYS.models import System
+from SYS.models import MediaDirectory
 
 
 def matcher(season_no: int, name, matching_type):
@@ -164,11 +164,18 @@ def get_dir_files_stat(directory=None, media_dir_hash=None):
         os.chdir(directory)
         for file in os.listdir():
             if file and (os.path.splitext(file)[1] in ['.mp4', '.mpeg4', '.webm', '.mkv', '.wmv', '.avi']):
-                create_time = datetime.datetime.fromtimestamp(pathlib.Path(file).stat().st_mtime)
-                last_sync = System.objects.filter(key='LAST_SYNC').first()
-                is_sync = last_sync and last_sync.value and create_time < datetime.datetime.strptime(
-                    last_sync.value,
+                modify_time = datetime.datetime.fromtimestamp(os.path.getmtime(pathlib.Path(file)))
+                create_time = datetime.datetime.fromtimestamp(os.path.getctime(pathlib.Path(file)))
+                last_sync = MediaDirectory.objects.filter(folder_hash=media_dir_hash).first()
+                last_sync_datetime = datetime.datetime.strptime(
+                    last_sync.last_sync,
                     '%Y-%m-%d %H:%M:%S.%f'  # 2021-06-17 20:41:43.935489
+                )
+                is_sync = (
+                        last_sync
+                        and last_sync.value
+                        and modify_time < last_sync_datetime
+                        and create_time < last_sync_datetime
                 )
                 file_date[file] = {
                     'media_dir_hash': media_dir_hash,
@@ -303,6 +310,8 @@ def add_tv_show_to_db(tmdb_data, location=None, media_dir_hash=None):
                         for episode in episodes:
                             synced_file = None
                             for available_file, stat in available_files.items():
+                                if stat.get('is_sync'):
+                                    continue
                                 if matcher(episode.get('episode_number'), available_file, 'episode'):
                                     episode_video = None
                                     try:
