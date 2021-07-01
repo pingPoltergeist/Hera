@@ -4,11 +4,11 @@ import os
 import pathlib
 import re
 import traceback
-
-import requests
+from pathlib import Path
 from django.conf import settings
 from CORE.models import Media, Video, Genre, TVShow
 from SYS.models import MediaDirectory
+from Hera.apis import TMDB, Fanart
 
 
 def matcher(season_no: int, name, matching_type):
@@ -17,165 +17,27 @@ def matcher(season_no: int, name, matching_type):
     return bool(
         (matching_type.lower() == 'movie' and bool(match('(\\D|^){}(\\D|$)'.format(str(season_no).zfill(2))))) or
         (matching_type.lower() == 'movie' and bool(match('(\\D|^){}(\\D|$)'.format(str(season_no))))) or
-        bool(match('{type}\\s*{season_no}(\\D|$)'.format(type=matching_type[0], season_no=str(season_no)))) or
-        bool(match('{type}\\s*{season_no}(\\D|$)'.format(type=matching_type[0], season_no=str(season_no).zfill(2)))) or
-        bool(match('{type}\\s*{season_no}(\\D|$)'.format(type=matching_type, season_no=str(season_no)))) or
-        bool(match('{type}\\s*{season_no}(\\D|$)'.format(type=matching_type, season_no=str(season_no).zfill(2))))
+        bool(match(r'{type}\s*{season_no}(\D|$)'.format(type=matching_type[0], season_no=str(season_no)))) or
+        bool(match(r'{type}\s*{season_no}(\D|$)'.format(type=matching_type[0], season_no=str(season_no).zfill(2)))) or
+        bool(match(r'{type}\s*{season_no}(\D|$)'.format(type=matching_type, season_no=str(season_no)))) or
+        bool(match(r'{type}\s*{season_no}(\D|$)'.format(type=matching_type, season_no=str(season_no).zfill(2))))
     )
-
-
-class TMDBAPI:
-    TMDB_API_KEY = 'adfff9c3b0688cc13ae8d7b0291b257e'
-    TMDB_URL = 'https://api.themoviedb.org/3'
-    TMDB_IMAGE_URL = 'https://image.tmdb.org/t/p/original'
-    TMDB_EXTRAS = '?api_key={api_key}&language=en-US'.format(api_key=TMDB_API_KEY)
-
-    def search_movie(self, search_key=None):
-        # print('---------', search_key)
-        search_url = self.TMDB_URL + '/search/movie' + self.TMDB_EXTRAS \
-                     + "&query={search_key}&page=1&include_adult=false".format(search_key=search_key)
-        response = requests.get(search_url)
-        return response
-
-    def search_tv(self, search_key=None):
-        # print('---------', search_key)
-        search_url = self.TMDB_URL + '/search/tv' + self.TMDB_EXTRAS \
-                     + "&query={search_key}&page=1&include_adult=false".format(search_key=search_key)
-        response = requests.get(search_url)
-        return response
-
-    def get_movie_by_id(self, movie_id):
-        movie_url = self.TMDB_URL + '/movie/{movie_id}'.format(movie_id=movie_id) + self.TMDB_EXTRAS
-        response = requests.get(movie_url)
-        return response.json()
-
-    def get_tv_show_by_id(self, tv_id):
-        tv_url = self.TMDB_URL + '/tv/{tv_id}'.format(tv_id=tv_id) + self.TMDB_EXTRAS
-        response = requests.get(tv_url)
-        return response.json()
-
-    def get_episode_by_tv_show_id(self, tv_id, season_id):
-        tv_url = self.TMDB_URL + '/tv/{tv_id}/season/{season_id}'.format(
-            tv_id=tv_id,
-            season_id=season_id
-        ) + self.TMDB_EXTRAS
-        response = requests.get(tv_url)
-        return response.json().get('episodes')
-
-    def get_collection_by_id(self, collection_id):
-        collection_url = self.TMDB_URL + '/collection/{collection_id}'.format(
-            collection_id=collection_id) + self.TMDB_EXTRAS
-        # print(collection_id, type(collection_id), ' | ', collection_url)
-        response = requests.get(collection_url)
-        return response.json()
-
-    def get_all_genre(self):
-        genre_url = self.TMDB_URL + '/genre/movie/list' + self.TMDB_EXTRAS
-        # print(genre_url)
-        response = requests.get(genre_url)
-        genres = dict()
-        for genre in response.json().get('genres'):
-            genres[genre['id']] = genre['name']
-        return genres
-
-    def get_trailer(self, tmdb_id, media_type=None):
-
-        trailer_url = self.TMDB_URL + '/{media_type}/{tmdb_id}/videos'.format(
-            media_type=media_type.lower(),
-            tmdb_id=tmdb_id
-        ) + self.TMDB_EXTRAS
-        # print(trailer_url)
-        response = requests.get(trailer_url)
-        data = response.json()['results']
-        trailer = None
-        for video in data:
-            if video.get('type') == "Trailer":
-                return 'https://www.youtube.com/watch?v=' + video.get('key')
-        return None
-
-    # https://api.themoviedb.org/3/tv/71912/external_ids?api_key=adfff9c3b0688cc13ae8d7b0291b257e&language=en-US
-    def get_external_ids(self, tmdb_id, media_type=None):
-        external_ids_url = self.TMDB_URL + '/{media_type}/{tmdb_id}/external_ids'.format(
-            media_type=media_type.lower(),
-            tmdb_id=tmdb_id
-        ) + self.TMDB_EXTRAS
-        return requests.get(external_ids_url).json()
-
-
-# https://webservice.fanart.tv/v3/movies/673?api_key=0a07e4f6e89f662683254b31e370bedb
-class FanartAPI:
-    FANART_API_KEY = '0a07e4f6e89f662683254b31e370bedb'
-    FANART_URL = 'https://webservice.fanart.tv/v3'
-    FANART_EXTRAS = '?api_key={api_key}'.format(api_key=FANART_API_KEY)
-
-    def get_logo_and_thumbnail(self, tmdb_id, media_type=None):
-        media_url_type = None
-        res = dict()
-        media_id = None
-        if 'movie' in media_type.lower():
-            media_id = tmdb_id
-            media_url_type = 'movies'
-        elif 'tv' in media_type.lower():
-            tmdbapi = TMDBAPI()
-            external_ids = tmdbapi.get_external_ids(tmdb_id=tmdb_id, media_type=media_type)
-            media_id = external_ids.get('tvdb_id')
-            media_url_type = media_type.lower()
-        logo_and_thumbnail_url = self.FANART_URL + '/{media_type}/{id}'.format(
-            media_type=media_url_type,
-            id=media_id
-        ) + self.FANART_EXTRAS
-        response = requests.get(logo_and_thumbnail_url)
-        # print(tmdb_id, ' | ', logo_and_thumbnail_url)
-        data = response.json()
-        # print("line: 183", data)
-        if data.get('{media_type}logo'.format(media_type=media_type)):
-            for logo in data['{media_type}logo'.format(media_type=media_type)]:
-                if logo['lang'] == 'en':
-                    res['logo'] = logo['url']
-                    break
-            if not res['logo']:
-                res['logo'] = data['{media_type}logo'.format(media_type=media_type)][0]['url']
-        elif data.get('hd{media_type}logo'.format(media_type=media_type)):
-            for logo in data['hd{media_type}logo'.format(media_type=media_type)]:
-                if logo['lang'] == 'en':
-                    res['logo'] = logo['url']
-                    break
-            if not res['logo']:
-                res['logo'] = data['hd{media_type}logo'.format(media_type=media_type)][0]['url']
-        else:
-            res['logo'] = None
-
-        if data.get('{media_type}thumb'.format(media_type=media_type)):
-            for logo in data['{media_type}thumb'.format(media_type=media_type)]:
-                if logo['lang'] == 'en':
-                    res['thumbnail'] = logo['url']
-                    break
-            if not res['logo']:
-                res['thumbnail'] = data['{media_type}thumb'.format(media_type=media_type)][0]['url']
-        else:
-            res['thumbnail'] = None
-
-        return res
 
 
 def get_dir_files_stat(directory=None, media_dir_hash=None):
     file_date = dict()
     try:
         os.chdir(directory)
+        media_dir = MediaDirectory.objects.filter(folder_hash=media_dir_hash).first()
         for file in os.listdir():
             if file and (os.path.splitext(file)[1] in ['.mp4', '.mpeg4', '.webm', '.mkv', '.wmv', '.avi']):
-                modify_time = datetime.datetime.fromtimestamp(os.path.getmtime(pathlib.Path(file)))
-                create_time = datetime.datetime.fromtimestamp(os.path.getctime(pathlib.Path(file)))
-                last_sync = MediaDirectory.objects.filter(folder_hash=media_dir_hash).first()
-                last_sync_datetime = datetime.datetime.strptime(
-                    last_sync.last_sync,
-                    '%Y-%m-%d %H:%M:%S.%f'  # 2021-06-17 20:41:43.935489
-                )
+                modify_time = datetime.datetime.fromtimestamp(os.path.getmtime(pathlib.Path(file))).astimezone()
+                create_time = datetime.datetime.fromtimestamp(os.path.getctime(pathlib.Path(file))).astimezone()
                 is_sync = (
-                        last_sync
-                        and last_sync.value
-                        and modify_time < last_sync_datetime
-                        and create_time < last_sync_datetime
+                        media_dir
+                        and media_dir.last_sync
+                        and modify_time < media_dir.last_sync
+                        and create_time < media_dir.last_sync
                 )
                 file_date[file] = {
                     'media_dir_hash': media_dir_hash,
@@ -183,7 +45,6 @@ def get_dir_files_stat(directory=None, media_dir_hash=None):
                     'is_sync': is_sync
                 }
     except Exception as e:
-        print(e)
         traceback.print_exc()
     return file_date
 
@@ -200,11 +61,14 @@ def get_dir_tv_shows_stat(directory=None, media_dir_hash=None):
     try:
         directory and os.chdir(directory)
         for file in [name for name in os.listdir() if os.path.isdir(os.path.join(name))]:
-            create_time = datetime.datetime.fromtimestamp(pathlib.Path(file).stat().st_mtime)
-            last_sync = System.objects.filter(key='LAST_SYNC').first()
-            is_sync = last_sync and last_sync.value and create_time < datetime.datetime.strptime(
-                last_sync.value,
-                '%Y-%m-%d %H:%M:%S.%f'  # 2021-06-17 20:41:43.935489
+            modify_time = datetime.datetime.fromtimestamp(os.path.getmtime(pathlib.Path(file))).astimezone()
+            create_time = datetime.datetime.fromtimestamp(os.path.getctime(pathlib.Path(file))).astimezone()
+            media_dir = MediaDirectory.objects.filter(folder_hash=media_dir_hash).first()
+            is_sync = (
+                    media_dir
+                    and media_dir.last_sync
+                    and modify_time < media_dir.last_sync
+                    and create_time < media_dir.last_sync
             )
             file_date[file] = {
                 'create_time': create_time,
@@ -213,7 +77,6 @@ def get_dir_tv_shows_stat(directory=None, media_dir_hash=None):
                 'is_sync': is_sync,
             }
     except Exception as e:
-        print(e)
         traceback.print_exc()
     return file_date
 
@@ -226,7 +89,7 @@ def get_all_tv_show_file_stat():
 
 
 def get_genre_array(genre_ids=None):
-    tmdbapi = TMDBAPI()
+    tmdb = TMDB()
     all_genres = None
     if genre_ids:
         genres = []
@@ -237,43 +100,41 @@ def get_genre_array(genre_ids=None):
             else:
                 try:
                     if not all_genres:
-                        all_genres = tmdbapi.get_all_genre()
+                        all_genres = tmdb.get_all_genre()
                     if all_genres.get(genre_id):
                         genre = Genre.objects.create(
                             tmdb_id=genre_id,
                             name=all_genres[genre_id]
                         )
                         genre.save()
-                        # print('adding Genre: {', genre, ' }', 'on line: 228')
                         genres.append(genre)
                 except Exception as e:
-                    print(e)
                     traceback.print_exc()
         return genres
 
 
-def add_tv_show_to_db(tmdb_data, location=None, media_dir_hash=None):
-    # if TVShow.objects.filter(tmdb_id=tmdb_data['id']):
-    #     return True
+def add_tv_show_to_db(tmdb_data, tv_files_data: dict, media_dir: MediaDirectory):
+    tv_show_folder_name = list(tv_files_data.keys())[0]
     tv_shows = None
-    tmdbapi = TMDBAPI()
-    fanartapi = FanartAPI()
+    tmdb = TMDB()
+    fanart = Fanart()
     try:
-        tv_shows = TVShow.objects.get_or_create(
+        tv_shows, status = TVShow.objects.get_or_create(
             tmdb_id=tmdb_data.get('id'),
-        )[0]
+            media_dir=media_dir,
+        )
         tv_shows.name = tmdb_data.get('name')
         tv_shows.description = tmdb_data.get('overview')
         tv_shows.type = 'T'
-        tv_shows.local_path = location
+        tv_shows.local_path = tv_show_folder_name
         tv_shows.rating = tmdb_data.get('vote_average')
         tv_shows.popularity = tmdb_data.get('popularity')
         tv_shows.tagline = tmdb_data.get('tagline')
 
         if tmdb_data.get('poster_path'):
-            tv_shows.poster_image = TMDBAPI.TMDB_IMAGE_URL + tmdb_data.get('poster_path')
+            tv_shows.poster_image = TMDB.TMDB_IMAGE_URL + tmdb_data.get('poster_path')
         if tmdb_data.get('backdrop_path'):
-            tv_shows.background_image = TMDBAPI.TMDB_IMAGE_URL + tmdb_data.get('backdrop_path')
+            tv_shows.background_image = TMDB.TMDB_IMAGE_URL + tmdb_data.get('backdrop_path')
         if tmdb_data['genres']:
             tv_shows.genre.add(*get_genre_array(tmdb_data['genres']))
 
@@ -281,12 +142,12 @@ def add_tv_show_to_db(tmdb_data, location=None, media_dir_hash=None):
             tv_shows.season_count = len(tmdb_data['seasons'])
             tv_shows.release_date = datetime.datetime.strptime(tmdb_data['seasons'][0]['air_date'], '%Y-%m-%d').date()
 
-        logo_and_thumbnail = fanartapi.get_logo_and_thumbnail(tmdb_data.get('id'), 'tv')
+        logo_and_thumbnail = fanart.get_logo_and_thumbnail(tmdb_data.get('id'), 'tv')
         if logo_and_thumbnail:
             tv_shows.logo = logo_and_thumbnail.get('logo')
             tv_shows.thumbnail = logo_and_thumbnail.get('thumbnail')
 
-        trailer = tmdbapi.get_trailer(tmdb_data.get('id'), 'tv')
+        trailer = tmdb.get_trailer(tmdb_data.get('id'), 'tv')
         if trailer:
             tv_shows.trailer = trailer
 
@@ -295,65 +156,49 @@ def add_tv_show_to_db(tmdb_data, location=None, media_dir_hash=None):
                 minutes=int(tmdb_data.get('episode_run_time')[0])
             ) if type(tmdb_data.get('episode_run_time')[0]) is int else None
 
-        if tmdb_data['seasons'] and location:
+        if tmdb_data['seasons']:
             # location and os.chdir(location)
-            available_seasons_dirs = [name for name in os.listdir(location)
-                                      if os.path.isdir(os.path.join(location, name))]
+            available_seasons_dirs_data: dict = tv_files_data[tv_show_folder_name]
             for season in tmdb_data['seasons']:
                 if not season.get('season_number'):
                     continue
-
-                for available_seasons_dir in available_seasons_dirs:
-                    if matcher(season.get('season_number'), available_seasons_dir, 'season'):
-                        available_files = get_dir_files_stat(os.path.join(location, available_seasons_dir))
-                        episodes = tmdbapi.get_episode_by_tv_show_id(tmdb_data['id'], season.get('season_number'))
+                print(f"===========================season_number: {season.get('season_number')}===========================")
+                for available_seasons_dir_name, available_files_in_seasons_dir in available_seasons_dirs_data.items():
+                    print(f"\t{available_seasons_dir_name} | "
+                          f"{matcher(season.get('season_number'), available_seasons_dir_name, 'season')}"
+                          f"---------------------")
+                    if matcher(season.get('season_number'), available_seasons_dir_name, 'season'):
+                        episodes = tmdb.get_episode_by_tv_show_id(tmdb_data['id'], season.get('season_number'))
                         for episode in episodes:
-                            synced_file = None
-                            for available_file, stat in available_files.items():
-                                if stat.get('is_sync'):
-                                    continue
+                            print(f"\t\t episode: {episode.get('episode_number')}")
+                            for available_file in available_files_in_seasons_dir:
+                                print(f"\t\t episode: {episode.get('episode_number')} | {available_file} | {matcher(episode.get('episode_number'), available_file, 'episode')}")
                                 if matcher(episode.get('episode_number'), available_file, 'episode'):
-                                    episode_video = None
-                                    try:
-                                        episode_video = tv_shows.video_set.get_or_create(tmdb_id=episode['id'])[0]
-                                        episode_video.name = episode['name']
-                                        episode_video.description = episode['overview']
-                                        episode_video.rating = episode['vote_average']
-                                        episode_video.season_no = episode['season_number']
-                                        episode_video.type = 'T'
-                                        episode_video.location = '/media{media_hash}/{show}/{season}/{episode}'.format(
-                                            media_hash=media_dir_hash,
-                                            show=location.split('\\')[-1],
-                                            season=available_seasons_dir,
+                                    episode_added = tv_shows.add_episode_from_episode_data(
+                                        episode=episode,
+                                        location='/media{media_hash}/{show}/{season}/{episode}'.format(
+                                            media_hash=media_dir.folder_hash,
+                                            show=tv_show_folder_name,
+                                            season=available_seasons_dir_name,
                                             episode=available_file
                                         )
-
-                                        if episode['still_path']:
-                                            episode_video.thumbnail = TMDBAPI.TMDB_IMAGE_URL + episode['still_path']
-                                        episode_video.save()
-                                        synced_file = available_file
-                                    except Exception as ex:
-                                        if episode_video:
-                                            episode_video.delete()
-                                        print(ex)
-                                        traceback.print_exc()
-
-                            if synced_file:
-                                del available_files[synced_file]
+                                    )
+                                    if episode_added:
+                                        available_files_in_seasons_dir.remove(available_file)
         if tv_shows.video_set.count():
             tv_shows.save()
         else:
             tv_shows.delete()
         return True
-    except Exception as e:
-        print('Ex--------------', e, 'on TvShow: ', tv_shows.tmdb_id, '\n', json.dumps(tmdb_data))
+    except Exception:
         if tv_shows:
             tv_shows.delete()
         traceback.print_exc()
         return False
 
 
-def add_movie_to_db(tmdb_data, location):
+def add_movie_to_db(tmdb_data, filename, media_dir: MediaDirectory):
+    location = '/media{id}/{filename}'.format(id=media_dir.folder_hash, filename=filename),
     if Video.objects.filter(tmdb_id=tmdb_data['id']):
         video = Video.objects.get(tmdb_id=tmdb_data['id'])
         video.location = location
@@ -361,8 +206,8 @@ def add_movie_to_db(tmdb_data, location):
         return True
     video = None
     media = None
-    tmdbapi = TMDBAPI()
-    fanartapi = FanartAPI()
+    tmdbapi = TMDB()
+    fanartapi = Fanart()
     try:
         video = Video.objects.create(
             tmdb_id=tmdb_data.get('id'),
@@ -374,11 +219,12 @@ def add_movie_to_db(tmdb_data, location):
             added_at=datetime.datetime.now(),
             popularity=tmdb_data.get('popularity'),
             tagline=tmdb_data.get('tagline'),
+            media_dir=media_dir
         )
         if tmdb_data.get('poster_path'):
-            video.poster_image = TMDBAPI.TMDB_IMAGE_URL + tmdb_data.get('poster_path')
+            video.poster_image = TMDB.TMDB_IMAGE_URL + tmdb_data.get('poster_path')
         if tmdb_data.get('backdrop_path'):
-            video.background_image = TMDBAPI.TMDB_IMAGE_URL + tmdb_data.get('backdrop_path')
+            video.background_image = TMDB.TMDB_IMAGE_URL + tmdb_data.get('backdrop_path')
 
         video.duration = datetime.timedelta(minutes=int(tmdb_data.get('runtime'))) if type(
             tmdb_data.get('runtime')) is int else None
@@ -395,7 +241,6 @@ def add_movie_to_db(tmdb_data, location):
         try:
             video.release_date = datetime.datetime.strptime(tmdb_data.get('release_date'), '%Y-%m-%d').date()
         except Exception as ex:
-            print(ex)
             traceback.print_exc()
 
         if tmdb_data['genres']:
@@ -413,16 +258,15 @@ def add_movie_to_db(tmdb_data, location):
                     description=collection.get('overview'),
                     type='M',
                     is_collection=True,
-
+                    media_dir=media_dir
                 )
                 if collection.get('backdrop_path'):
-                    media.background_image = TMDBAPI.TMDB_IMAGE_URL + collection.get('backdrop_path')
+                    media.background_image = TMDB.TMDB_IMAGE_URL + collection.get('backdrop_path')
 
                 if collection.get('poster_path'):
-                    media.poster_image = TMDBAPI.TMDB_IMAGE_URL + collection.get('poster_path')
+                    media.poster_image = TMDB.TMDB_IMAGE_URL + collection.get('poster_path')
 
             media.save()
-            # print('----------------------', media)
             video.media = media
 
         video.save()
@@ -432,6 +276,5 @@ def add_movie_to_db(tmdb_data, location):
             video.delete()
         if media and not media.video_set.all():
             media.delete()
-        print('Ex--------------', e)
         traceback.print_exc()
         return False

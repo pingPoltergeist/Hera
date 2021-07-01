@@ -11,7 +11,7 @@ class SystemAdmin(admin.ModelAdmin):
 @admin.register(MediaDirectory)
 class MediaDirectoryAdmin(admin.ModelAdmin):
     meta = MediaDirectory
-    list_display = ['folder_location', 'folder_hash', 'last_sync']
+    list_display = ['folder_location', 'folder_hash', 'movie_dir', 'movie_last_sync', 'tv_dir', 'tv_last_sync']
 
 
 admin.site.register(System, SystemAdmin)

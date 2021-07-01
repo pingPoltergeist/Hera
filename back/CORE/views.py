@@ -13,13 +13,11 @@ from django.db.models import Q
 from functools import reduce
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import permission_classes, api_view
-from USER.models import Watchlist, UserProfile
-from SYS.utils import add_movie_to_db, add_tv_show_to_db, TMDBAPI
+from SYS.utils import add_movie_to_db, add_tv_show_to_db
+from Hera.apis import TMDB, Fanart
 
 
 # Create your views here.
-
-
 class MovieCollectionList(APIView):
     def get(self, request, format=None):
         movies = Media.objects.filter(type='M')
@@ -130,7 +128,8 @@ class Search(APIView):
 
         movie_query = Video.objects.filter(type='M').filter(reduce(operator.or_, search_filters)).order_by(
             '-popularity').distinct()
-        tv_query = TVShow.objects.filter(type='T').filter(reduce(operator.or_, search_filters)).order_by('-popularity').distinct()
+        tv_query = TVShow.objects.filter(type='T').filter(reduce(operator.or_, search_filters)).order_by(
+            '-popularity').distinct()
         movies = MovieListSerializer(movie_query, many=True).data
         tvs = TVShowListSerializer(tv_query, many=True).data
         return Response(movies + tvs)
@@ -194,17 +193,18 @@ def change_tmdb_id(request, data_type: str, tmdb_id):
         if not Video.objects.filter(tmdb_id=tmdb_id):
             return Response({'error': 'No movie found with the tmdb id: {}'.format(tmdb_id)}, status=400)
         movie = Video.objects.get(tmdb_id=tmdb_id)
-        tmdbapi = TMDBAPI()
+        tmdbapi = TMDB()
         tmdb_response = tmdbapi.get_movie_by_id(new_tmdb_id)
         video_url = movie.location
+        media_dir_hash = movie.media_dir.folder_hash
         movie.delete()
-        add_movie_to_db(tmdb_response, location=video_url)
+        add_movie_to_db(tmdb_response, location=video_url, media_dir_hash=media_dir_hash)
         return Response(MovieListSerializer(Video.objects.get(tmdb_id=tmdb_response.get('id')), many=False).data)
     elif data_type.upper() == 'TV':
         if not TVShow.objects.filter(tmdb_id=tmdb_id):
             return Response({'error': 'No movie found with the tmdb id: {}'.format(tmdb_id)}, status=400)
         tv = TVShow.objects.get(tmdb_id=tmdb_id)
-        tmdbapi = TMDBAPI()
+        tmdbapi = TMDB()
         tmdb_response = tmdbapi.get_tv_show_by_id(new_tmdb_id)
         tv_local_path = tv.local_path
         tv.delete()
