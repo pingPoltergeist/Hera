@@ -162,17 +162,11 @@ def add_tv_show_to_db(tmdb_data, tv_files_data: dict, media_dir: MediaDirectory)
             for season in tmdb_data['seasons']:
                 if not season.get('season_number'):
                     continue
-                print(f"===========================season_number: {season.get('season_number')}===========================")
                 for available_seasons_dir_name, available_files_in_seasons_dir in available_seasons_dirs_data.items():
-                    print(f"\t{available_seasons_dir_name} | "
-                          f"{matcher(season.get('season_number'), available_seasons_dir_name, 'season')}"
-                          f"---------------------")
                     if matcher(season.get('season_number'), available_seasons_dir_name, 'season'):
                         episodes = tmdb.get_episode_by_tv_show_id(tmdb_data['id'], season.get('season_number'))
                         for episode in episodes:
-                            print(f"\t\t episode: {episode.get('episode_number')}")
                             for available_file in available_files_in_seasons_dir:
-                                print(f"\t\t episode: {episode.get('episode_number')} | {available_file} | {matcher(episode.get('episode_number'), available_file, 'episode')}")
                                 if matcher(episode.get('episode_number'), available_file, 'episode'):
                                     episode_added = tv_shows.add_episode_from_episode_data(
                                         episode=episode,
@@ -198,7 +192,7 @@ def add_tv_show_to_db(tmdb_data, tv_files_data: dict, media_dir: MediaDirectory)
 
 
 def add_movie_to_db(tmdb_data, filename, media_dir: MediaDirectory):
-    location = '/media{id}/{filename}'.format(id=media_dir.folder_hash, filename=filename),
+    location = '/media{id}/{filename}'.format(id=media_dir.folder_hash, filename=filename)
     if Video.objects.filter(tmdb_id=tmdb_data['id']):
         video = Video.objects.get(tmdb_id=tmdb_data['id'])
         video.location = location

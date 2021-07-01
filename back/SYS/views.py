@@ -39,7 +39,6 @@ class Sync(APIView):
         movies = {}
         for mediaDirectory in MediaDirectory.objects.filter(movie_dir=True):
             non_synced_media_files = mediaDirectory.get_non_synced_movie_files()
-            print(mediaDirectory, '=== non_synced_media_files: ', non_synced_media_files)
             for movie_name in non_synced_media_files:
                 movie_search_key = re.compile(r'[\w ]*').match(movie_name).group()
                 response = tmdb.search_movie(movie_search_key).json()
@@ -57,7 +56,6 @@ class Sync(APIView):
         tvs = {}
         for tvDirectory in MediaDirectory.objects.filter(tv_dir=True):
             non_synced_tv_shows: dict = tvDirectory.get_non_synced_tv_shows()
-            print(tvDirectory, '=== get_non_synced_tv_shows: ', non_synced_tv_shows)
 
             for tv_show_name, sub_folders in non_synced_tv_shows.items():
                 tv_search_key = re.compile(r'[\w ]*').match(tv_show_name).group()
@@ -70,9 +68,9 @@ class Sync(APIView):
                         media_dir=tvDirectory
                     )
                     tvs[tv_show_name] = {'status': sync_status, 'tmdb': response["results"][0]["id"]}
-            # if non_synced_tv_shows:
-            #     tvDirectory.tv_last_sync = datetime.datetime.now().astimezone()
-            #     tvDirectory.save()
+            if non_synced_tv_shows:
+                tvDirectory.tv_last_sync = datetime.datetime.now().astimezone()
+                tvDirectory.save()
         return Response({'movies': movies, 'tvs': tvs})
 
 
