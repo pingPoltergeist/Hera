@@ -1,4 +1,6 @@
 import re
+import time
+
 import yaml
 import traceback
 import datetime
@@ -11,10 +13,10 @@ from pathlib import Path
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from . import utils
-from SYS.models import System, MediaDirectory, MediaDirectoryType
+from SYS.models import System, MediaDirectory
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.decorators import permission_classes
-
+from Hera.apis import TMDB, Fanart
 from CORE.models import Video, TVShow, MediaType, Media
 from django.contrib.auth.models import User as AuthUser
 from django.conf import settings
@@ -22,94 +24,53 @@ from django.conf import settings
 
 class Sync(APIView):
     def get(self, request, format=None):
-        #  media dir sync start
-        for movie_dir in MediaDirectory.objects.filter(folder_type=MediaDirectoryType.MOVIE):
-            if movie_dir.folder_hash in settings.MOVIES_DIRS_MAP.keys():
-                movie_dir.delete()
-        for tv_dir in MediaDirectory.objects.filter(folder_type=MediaDirectoryType.TV_SHOWS):
-            if tv_dir.folder_hash in settings.TVSHOWS_DIRS_MAP.keys():
-                tv_dir.delete()
+        MediaDirectory.update_media_directory(
+            tv_dirs=settings.TVSHOWS_DIRS_MAP,
+            movie_dirs=settings.MOVIES_DIRS_MAP
+        )
 
-        for movie_dir_hash, movie_dir in settings.MOVIES_DIRS_MAP.items():
-            MediaDirectory.objects.get_or_create(
-                folder_location=str(movie_dir),
-                folder_hash=movie_dir_hash,
-                folder_type=MediaDirectoryType.MOVIE
-            )
-        for tv_dir_hash, tv_dir in settings.TVSHOWS_DIRS_MAP.items():
-            MediaDirectory.objects.get_or_create(
-                folder_location=str(tv_dir),
-                folder_hash=tv_dir_hash,
-                folder_type=MediaDirectoryType.TV_SHOWS
-            )
-        #  media dir sync end
+        #  delete removed files
+        Video.delete_all_video_with_no_local_file()
 
-        #  delete start
-        for video in Video.objects.all():
-            try:
-                video_url: str = video.location
-                video_url_array = video_url.split('/')
-                media_dir_hash = video_url_array[1][5:]
-                if video.type == MediaType.MOVIE:
-                    local_path: Path = settings.MOVIES_DIRS_MAP[media_dir_hash] / '/'.join(video_url_array[2:])
-                elif video.type == MediaType.TV_SHOWS:
-                    local_path: Path = settings.TVSHOWS_DIRS_MAP[media_dir_hash] / '/'.join(video_url_array[2:])
-                else:
-                    video.delete()
-                if not local_path.exists():
-                    video.delete()
-            except Exception as ex:
-                video.delete()
-                traceback.print_exc()
-        for media in Media.objects.all():
-            if not media.video_set.all():
-                media.delete()
-        #  delete ends
+        # Delete media with no child
+        Media.delete_all_media_with_no_child()
 
-        tmdbapi = utils.TMDBAPI()
-        movies = {k: v for k, v in utils.get_all_movie_file_stat().items() if not (v.get('is_sync'))}
-        for movie_name, details in movies.items():
-            movie_search_key = re.compile('[\w ]*').match(movie_name).group()
-            response = tmdbapi.search_movie(movie_search_key).json()
-            if response.get("results"):
-                movies[movie_name]['tmdb_id'] = response["results"][0]["id"]
-                movies[movie_name]['title'] = response["results"][0]["original_title"]
-                sync_status = utils.add_movie_to_db(
-                    tmdbapi.get_movie_by_id(response["results"][0]["id"]),
-                    '/media{id}/{filename}'.format(id=details.get('media_dir_hash'), filename=movie_name)
-                )
-                movies[movie_name]['sync_status'] = sync_status
-        synced_movie_dir = set(val.get('media_dir_hash') for val in movies.values())
-        MediaDirectory.objects.filter(
-            folder_hash__in=synced_movie_dir,
-            folder_type=MediaDirectoryType.MOVIE
-        ).update(last_sync=datetime.datetime.now(datetime.timezone.utc))
+        tmdb = TMDB()
+        movies = {}
+        for mediaDirectory in MediaDirectory.objects.filter(movie_dir=True):
+            non_synced_media_files = mediaDirectory.get_non_synced_movie_files()
+            for movie_name in non_synced_media_files:
+                movie_search_key = re.compile(r'[\w ]*').match(movie_name).group()
+                response = tmdb.search_movie(movie_search_key).json()
+                if response.get("results"):
+                    sync_status = utils.add_movie_to_db(
+                        tmdb_data=tmdb.get_movie_by_id(response["results"][0]["id"]),
+                        filename=movie_name,
+                        media_dir=mediaDirectory
+                    )
+                    movies[movie_name] = {'status': sync_status, 'tmdb': response["results"][0]["id"]}
+            if non_synced_media_files:
+                mediaDirectory.movie_last_sync = datetime.datetime.now().astimezone()
+                mediaDirectory.save()
 
-        tvs = utils.get_all_tv_show_file_stat()
-        for tv_show_name, details in tvs.items():
-            tv_search_key = re.compile('[\w ]*').match(tv_show_name).group()
-            response = tmdbapi.search_tv(tv_search_key).json()
-            # print(tv_search_key, response)
-            if response.get("results"):
-                sync_status = utils.add_tv_show_to_db(tmdbapi.get_tv_show_by_id(
-                    response["results"][0]["id"]),
-                    details.get('location'),
-                    details.get('media_dir_hash')
-                )
-                tvs[tv_show_name].update({
-                    'tmdb_id': response["results"][0]["id"],
-                    'name': response["results"][0]["name"],
-                    'sync_status': sync_status
-                })
-        synced_tv_dir = set(val.get('media_dir_hash') for val in tvs.values())
-        MediaDirectory.objects.filter(
-            folder_hash__in=synced_tv_dir,
-            folder_type=MediaDirectoryType.TV_SHOWS
-        ).update(last_sync=datetime.datetime.now(datetime.timezone.utc))
+        tvs = {}
+        for tvDirectory in MediaDirectory.objects.filter(tv_dir=True):
+            non_synced_tv_shows: dict = tvDirectory.get_non_synced_tv_shows()
 
-        last_sync, flag = System.objects.get_or_create(key='LAST_SYNC')
-        last_sync.value = datetime.datetime.now()
-        last_sync.save()
+            for tv_show_name, sub_folders in non_synced_tv_shows.items():
+                tv_search_key = re.compile(r'[\w ]*').match(tv_show_name).group()
+                response = tmdb.search_tv(tv_search_key).json()
+                # print(tv_search_key, response)
+                if response.get("results"):
+                    sync_status = utils.add_tv_show_to_db(
+                        tmdb_data=tmdb.get_tv_show_by_id(response["results"][0]["id"]),
+                        tv_files_data={tv_show_name: sub_folders},
+                        media_dir=tvDirectory
+                    )
+                    tvs[tv_show_name] = {'status': sync_status, 'tmdb': response["results"][0]["id"]}
+            if non_synced_tv_shows:
+                tvDirectory.tv_last_sync = datetime.datetime.now().astimezone()
+                tvDirectory.save()
         return Response({'movies': movies, 'tvs': tvs})
 
 
