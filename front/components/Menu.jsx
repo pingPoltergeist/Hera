@@ -25,7 +25,6 @@ const Menu = ({hamburgerFlag, setHamburgerFlag}) => {
         <motion.div key={'child'} className={styles.menu_container} initial={{opacity: 0}} animate={{opacity: 1}} exit={{ opacity: 0 }}>
             <div>
                 {admin && <p className={styles.menu_link}><Link href="/settings">SETTINGS</Link></p>}
-                <p className={styles.menu_link}><Link href="">MY ACCOUNT</Link></p>
                 <p className={styles.menu_link}><Link href="/favourites">FAVOURITES</Link></p>
                 <p className={styles.menu_link} onClick={() => signout(() => {router.replace('/login')})}>LOG OUT</p>
             </div>

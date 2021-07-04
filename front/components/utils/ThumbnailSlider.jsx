@@ -20,7 +20,7 @@ const ThumbnailSlider = ({ medias, title, type='movie' }) => {
                 {medias.map((media, index) => (
                     <SwiperSlide className={styles.card} key={index}>
                         <Link href={`/${type}/${media.tmdb_id}`}>
-                            {media.thumbnail ? <Image layout="fill" src={media.thumbnail}/> :
+                            {media.thumbnail ? <Image layout="fill" placeholder={"loading"} src={media.thumbnail}/> :
                                 <h2>{media.name}</h2>}
                         </Link>
                     </SwiperSlide>

@@ -2,6 +2,7 @@ import Head from "next/head";
 import Navbar from "./Navbar";
 import {Router, useRouter} from "next/router";
 import NProgress from 'nprogress'
+import screenfull from "screenfull";
 
 Router.events.on('routeChangeStart', (url) => {
     NProgress.start()
@@ -9,6 +10,7 @@ Router.events.on('routeChangeStart', (url) => {
 
 Router.events.on('routeChangeComplete', () => {
     NProgress.done()
+    screenfull.exit()
 })
 
 Router.events.on('routeChangeError', () => {

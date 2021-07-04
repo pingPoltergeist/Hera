@@ -9,7 +9,6 @@ import {withAuth} from "../../helpers/utilities";
 import {getCookieToken, isAuthenticated} from "../../helpers/authApiCalls";
 import Fallback from "../../components/Fallback";
 import {ErrorBoundary} from "react-error-boundary";
-import {error} from "next/dist/build/output/log";
 
 export async function getServerSideProps({ query, req, res }) {
 
@@ -101,7 +100,7 @@ const player = ({video}) => {
     }
 
     const toggleFullScreen = () => {
-        screenfull.toggle(playerContainerRef.current)
+        screenfull.request(playerContainerRef.current)
     }
 
     const handleProgress = (playedSeconds) => {
