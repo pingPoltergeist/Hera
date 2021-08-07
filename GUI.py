@@ -51,12 +51,8 @@ class HeraGUI(Frame):
 
     def __configure(self):
         load_dotenv()
-        try:
-            with open(self.BASE_DIR / 'settings.yaml') as f:
-                port = yaml.load(f, Loader=yaml.FullLoader).get('PORT')
-        except Exception as ex:
-            port = 3000
 
+        port = int(os.environ.get('PORT')) if os.environ.get('PORT') else 5201
         self.__FRONT_PORT = port
         self.__BACK_PORT = self.__FRONT_PORT + 1
         self.__PROTOCOL = 'http'
