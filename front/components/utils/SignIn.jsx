@@ -7,8 +7,8 @@ import Alert from './Alert'
 const Signin = () => {
 
     const [user, setUser] = useState({
-        username: 'subha',
-        password: 'SK3un$@du',
+        username: '',
+        password: '',
         loading: false,
         error: ''
     })
